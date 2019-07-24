@@ -18,10 +18,10 @@ slice_profile = 'gaussian';
 
 % Simulation parameters
 sim_resn = 0.1; % mm
-disp_resn = 0.5; % mm
 
 % Display options
 interp = 'nearest'; % Can be a cell array representing a blurring kernel
+disp_resn = 0.5; % mm
 
 % Derived parameters
 sim_y_pts = (fov/sim_resn)+1;
@@ -43,20 +43,13 @@ img = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,slice_profile
 % slice spacing
 ground_truth = mri_acq(phantom,fov,sim_resn,acq_resn,slice_spacing,slices,slice_profile,y);
 
+disp_size = [(acq_resn/disp_resn)*size(img,1),(slice_spacing/disp_resn)*size(img,2)];
+
 % Display acquired image
-img_disp = imresize(img,[(acq_resn/disp_resn)*size(img,1),(slice_spacing/disp_resn)*size(img,2)],interp);
-imshow(img_disp',[])
-title('Acquired image', 'Interpreter', 'latex')
-xlabel('$x$ -- in-slice', 'Interpreter', 'latex');
-ylabel('$y$ -- through-slice', 'Interpreter', 'latex');
+show_image(img,disp_size,interp,'Acquired image')
 
 % Display ground truth image
-img_disp = imresize(ground_truth,[(acq_resn/disp_resn)*size(img,1),(slice_spacing/disp_resn)*size(img,2)],interp);
-figure
-imshow(img_disp',[])
-title('Ground truth image', 'Interpreter', 'latex')
-xlabel('$x$ -- in-slice', 'Interpreter', 'latex');
-ylabel('$y$ -- through-slice', 'Interpreter', 'latex');
+show_image(ground_truth,disp_size,interp,'Ground truth image')
 
 % Perform SRR in through-slice (y) direction
 srr_img = zeros(size(img));
@@ -66,20 +59,10 @@ for column_x = 1:acq_x_pts
 end
 
 % Display SR reconstructed image
-img_disp = imresize(srr_img,[(acq_resn/disp_resn)*size(img,1),(slice_spacing/disp_resn)*size(img,2)],interp);
-figure
-imshow(img_disp',[])
-title('SRR image', 'Interpreter', 'latex')
-xlabel('$x$ -- in-slice', 'Interpreter', 'latex');
-ylabel('$y$ -- through-slice', 'Interpreter', 'latex');
+show_image(srr_img,disp_size,interp,'SRR image')
 
 % Display error image
-img_disp = imresize(srr_img-ground_truth,[(acq_resn/disp_resn)*size(img,1),(slice_spacing/disp_resn)*size(img,2)],interp);
-figure
-imshow(img_disp',[])
-title('Error image for SRR', 'Interpreter', 'latex')
-xlabel('$x$ -- in-slice', 'Interpreter', 'latex');
-ylabel('$y$ -- through-slice', 'Interpreter', 'latex');
+show_image(srr_img-ground_truth,disp_size,interp,'Error image for SRR')
 
 % Compare central lines profiles
 figure
