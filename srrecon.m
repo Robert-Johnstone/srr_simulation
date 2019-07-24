@@ -1,4 +1,4 @@
-function [hr_image] = srrecon(lr_image,kernel_type,kernel_width)
+function [hr_image] = srrecon(lr_image,kernel_type,kernel_width,ground_truth)
 %SRRECON Performs a super-resolution reconstruction
 %   Takes a 1D image vector and, using a specified kernel_type, performed a
 %   super-resolution reconstruction
@@ -8,7 +8,7 @@ function [hr_image] = srrecon(lr_image,kernel_type,kernel_width)
 %   kernel_width - the nominal width of the kernel, e.g. FWHM, in pixels
 
     % Set number of iterations for iterative back projection
-    n_iter = 1;
+    n_iter = 10;
 
     % Create forward and backward projection kernels
     m = 2; % Multiplier used to set how big vector representing kernel is
@@ -25,6 +25,10 @@ function [hr_image] = srrecon(lr_image,kernel_type,kernel_width)
     % Create initial high resultion image guess
     hr_image = lr_image;
 
+%     figure
+%     plot(0,norm(hr_image-ground_truth),'x')
+%     hold on
+    
     for i = 1:n_iter
         % Forward project
         lr_image_guess = conv(hr_image,fp_kernel,'same');
@@ -33,6 +37,7 @@ function [hr_image] = srrecon(lr_image,kernel_type,kernel_width)
         % Back project error
         output_image_error = conv(lr_image_error,bp_kernel,'same');
         hr_image = hr_image-output_image_error;
+%         plot(i,norm(hr_image-ground_truth),'x')
     end
 end
 

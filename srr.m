@@ -40,7 +40,12 @@ end
 
 % Define phantom
 [X,Y] = meshgrid(x,y);
-phantom=(X.^2+Y.^2)<phantom_radius^2;
+phantom=double((X.^2+Y.^2)<phantom_radius^2);
+
+% Calculate ground truth image
+ground_truth = imresize(phantom,[fov/acq_resn+1 slices],'bilinear');
+% Is this a reasonable ground truth, or should I use an image acquired with
+% thin slices?
 
 % Iterate through the slices, exciting a slice and acquiring
 slices_y = linspace(-fov/2,+fov/2,slices);
@@ -77,7 +82,7 @@ ylabel('$y$ -- through-slice', 'Interpreter', 'latex');
 srr_img = zeros(size(img));
 kernel_width = sqrt(slice_thickness^2-acq_resn^2)/acq_resn; % In pixels
 for column_x = 1:acq_x_pts
-    srr_img(column_x,:) = srrecon(img(column_x,:),'gaussian',kernel_width);
+    srr_img(column_x,:) = srrecon(img(column_x,:),'gaussian',kernel_width,ground_truth(column_x,:));
 end
 
 % Display SR reconstructed image
@@ -93,4 +98,5 @@ figure
 plot(img(ceil(acq_x_pts/2),:))
 hold on
 plot(srr_img(ceil(acq_x_pts/2),:))
+plot(ground_truth(ceil(acq_x_pts/2),:)*200)
 title('Comparison of line profiles', 'Interpreter', 'latex')
