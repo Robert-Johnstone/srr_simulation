@@ -12,16 +12,16 @@ phantom_radius = 100; % mm
 % Acquisition parameters
 fov = 304; % mm, governs number of slices, too
 slice_thickness = 10; % mm
-slice_spacing = 4; % mm - must give even number of pixels in slice
-acq_resn = 4; % mm, in-slice resolution
+slice_spacing = 2; % mm - must give even number of pixels in slice
+acq_resn = 2; % mm, in-slice resolution
 slice_profile = 'gaussian';
 
 % Simulation parameters
 sim_resn = 0.1; % mm
-disp_resn = 0.25; % mm
+disp_resn = 0.5; % mm
 
 % Display options
-interp = 'cubic'; % Can be a cell array representing a blurring kernel
+interp = 'nearest'; % Can be a cell array representing a blurring kernel
 
 % Derived parameters
 sim_y_pts = (fov/sim_resn)+1;
@@ -75,7 +75,7 @@ ylabel('$y$ -- through-slice', 'Interpreter', 'latex');
 
 % Perform SRR in through-slice (y) direction
 srr_img = zeros(size(img));
-kernel_width = sqrt(slice_thickness^2-acq_resn^2);
+kernel_width = sqrt(slice_thickness^2-acq_resn^2)/acq_resn; % In pixels
 for column_x = 1:acq_x_pts
     srr_img(column_x,:) = srrecon(img(column_x,:),'gaussian',kernel_width);
 end
@@ -88,3 +88,9 @@ title('SRR image -- nearest-neighbour interpolation', 'Interpreter', 'latex')
 xlabel('$x$ -- in-slice', 'Interpreter', 'latex');
 ylabel('$y$ -- through-slice', 'Interpreter', 'latex');
 
+% Compare central lines profiles
+figure
+plot(img(ceil(acq_x_pts/2),:))
+hold on
+plot(srr_img(ceil(acq_x_pts/2),:))
+title('Comparison of line profiles', 'Interpreter', 'latex')
