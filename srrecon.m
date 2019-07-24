@@ -8,7 +8,7 @@ function [hr_image] = srrecon(lr_image,kernel_type,kernel_width,ground_truth)
 %   kernel_width - the nominal width of the kernel, e.g. FWHM, in pixels
 
     % Set number of iterations for iterative back projection
-    n_iter = 10;
+    n_iter = 1;
 
     % Create forward and backward projection kernels
     m = 2; % Multiplier used to set how big vector representing kernel is
