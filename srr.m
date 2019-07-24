@@ -12,8 +12,13 @@ phantom_radius = 100; % mm
 % Acquisition parameters
 fov = 304; % mm, governs number of slices, too
 slice_thickness = 10; % mm
+<<<<<<< HEAD
 slice_spacing = 2; % mm - must give even number of pixels in slice
 acq_resn = 2; % mm, in-slice resolution
+=======
+slice_spacing = 4; % mm - must give even number of pixels in slice
+acq_resn = 4; % mm, in-slice resolution
+>>>>>>> a2525c7e0bb76635983950c838b432d571d86924
 slice_profile = 'gaussian';
 
 % Simulation parameters
@@ -74,6 +79,7 @@ xlabel('$x$ -- in-slice', 'Interpreter', 'latex');
 ylabel('$y$ -- through-slice', 'Interpreter', 'latex');
 
 % Perform SRR in through-slice (y) direction
+<<<<<<< HEAD
 srr_img = zeros(size(img));
 kernel_width = sqrt(slice_thickness^2-acq_resn^2)/acq_resn; % In pixels
 for column_x = 1:acq_x_pts
@@ -94,3 +100,5 @@ plot(img(ceil(acq_x_pts/2),:))
 hold on
 plot(srr_img(ceil(acq_x_pts/2),:))
 title('Comparison of line profiles', 'Interpreter', 'latex')
+=======
+>>>>>>> a2525c7e0bb76635983950c838b432d571d86924
