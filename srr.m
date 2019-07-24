@@ -10,7 +10,7 @@ close all
 phantom_radius = 100; % mm
 
 % Acquisition parameters
-fov = 400; % mm, governs number of slices, too
+fov = 300; % mm, governs number of slices, too
 slice_thickness = 10; % mm
 slice_spacing = 2; % mm
 acq_resn = 2; % mm, in-slice resolution
@@ -24,12 +24,11 @@ kernel_width = 40; % mm, full width of kernel, not slice width
 % Display options
 interp = 'nearest'; % Can be a cell array representing a blurring kernel
 
-% % Define sampling matrix
-% % 1st dimension: in-slice co-ordinate
-% % 2nd dimension: through slice co-ordinate
-% % 3rd dimension: sample number
-% n_samples = (fov/acq_resn) * (fov/slice_thickness);
-% sampling = zeros(n_samples);
+% Derived parameters
+n_y_pts = (fov/sim_resn)+1;
+n_x_pts = (fov/sim_resn)+1;
+y = linspace(-fov/2,+fov/2,n_y_pts);
+x = linspace(-fov/2,+fov/2,n_x_pts);
 
 % Define blurring kernel
 n_kernel_pts = (kernel_width/sim_resn)+1;
@@ -38,39 +37,43 @@ switch slice_profile
     case 'gaussian'
         sigma = slice_thickness/(2*sqrt(2*log(2)));
         kernel = exp(-((kernel_pts/sigma).^2)/2)/(sigma*sqrt(2*pi));
-        
 end
 
-% Define phantom vector
-phant = zeros((fov/acq_resn)+1,(fov/slice_thickness)+1);
-phant = phantom('Modified Shepp-Logan',200);
+% Define phantom
+[X,Y] = meshgrid(x,y);
+phantom=(X.^2+Y.^2)<phantom_radius^2;
 
-% Problem is separable, so iterate through pixels in slice (along x)
+% Iterate through the slices, exciting a slice and acquiring
 slices = (fov/slice_spacing)+1;
+slices_y = linspace(-fov/2,+fov/2,slices);
 n_y_pts = (fov/sim_resn)+1;
-n_x_pts = (fov/acq_resn)+1;
 y = linspace(-fov/2,+fov/2,n_y_pts);
-x = linspace(-fov/2,+fov/2,n_x_pts);
-sampling_y = mod(y,slice_spacing)<sim_resn/2;
-img = zeros(n_x_pts,(fov/slice_spacing)+1);
-for slice_x = -fov/2:acq_resn:fov/2
-    % Create phantom
-    phant_y = (slice_x^2 + y.^2)<(phantom_radius^2);
-    % Blur
-    blurred_phant_y = conv(phant_y,kernel,'same');
-    % Sample
-    img_y = blurred_phant_y(sampling_y);
-    % Store in image
-    img(x==slice_x,:) = img_y;
+img = zeros(fov/acq_resn+1,slices);
+for slice = 1:slices
+    % Excite phantom
+    slice_pos = slices_y(slice);
+    switch slice_profile
+        case 'gaussian'
+            kernel_shifted = exp(-(((y-slice_pos)/sigma).^2)/2)/(sigma*sqrt(2*pi));
+    end
+    excitation = repmat(kernel_shifted,(fov/sim_resn)+1,1);
+    phant_excited = phantom.*excitation;
+%     imshow(phant_excited',[0 .1]);
+    pause(.01)
+    % Acquire echo
+    echo = fft(sum(phant_excited,2));
+    % Truncate echo to number of acquired samples - fov/acq_resn+1
+    echo_truncated = [echo(1:fov/(2*acq_resn)+1); echo(n_x_pts-fov/(2*acq_resn)+1:end)];
+    % Reconstruct slice
+    image_slice = abs(ifft(echo_truncated));
+%     plot(image_slice)
+    % Store slice in 2D image
+    img(:,slice) = image_slice;
 end
-
-% Simulate MR acquisition in x-direction
-img_hybrid=fft(img,fov/sim_resn,1);
-img_mri=ifft(img_hybrid,n_x_pts,1);
 
 % Display acquired image
-img_mri_disp = imresize(img,[(acq_resn/disp_resn)*size(img,1),(slice_spacing/disp_resn)*size(img,2)],'nearest');
-imshow(img_disp')
-title('Acquired image - nearest-neighbour interpolation', 'Interpreter', 'latex')
-xlabel('$x - in-slice$', 'Interpreter', 'latex');
-ylabel('$y - through-slice$', 'Interpreter', 'latex');
+img_disp = imresize(img,[(acq_resn/disp_resn)*size(img,1),(slice_spacing/disp_resn)*size(img,2)],'nearest');
+imshow(img_disp',[])
+title('Acquired image -- nearest-neighbour interpolation', 'Interpreter', 'latex')
+xlabel('$x$ -- in-slice', 'Interpreter', 'latex');
+ylabel('$y$ -- through-slice', 'Interpreter', 'latex');
