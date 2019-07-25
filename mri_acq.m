@@ -22,6 +22,14 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
             case 'rect'
                 kernel_shifted = and((y-slice_pos)<slice_thickness/2, ...
                     (y-slice_pos)>=-slice_thickness/2)/(slice_thickness/sim_resn);
+            case 'rect_adv'
+                % Set positions fully inside slice to 1
+                kernel_shifted = (abs(y-slice_pos)<=(slice_thickness-sim_resn)/2);
+                % Set positions partially in slice to weighted value
+                kernel_shifted = kernel_shifted+(abs(abs(y-slice_pos)-slice_thickness/2)<sim_resn/2) ...
+                    .* (abs(abs(y-slice_pos)-(slice_thickness-sim_resn)/2)/sim_resn);
+                % Normalise
+                kernel_shifted = kernel_shifted/(slice_thickness/sim_resn);
         end
         excitation = repmat(kernel_shifted,(fov/sim_resn)+1,1);
         phant_excited = phantom.*excitation;
