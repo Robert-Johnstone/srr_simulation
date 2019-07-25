@@ -1,6 +1,5 @@
 function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,slice_profile,y)
 %MRI_ACQ Acquires a 2D MR image
-%   Detailed explanation goes here
 
     % Set up parameters for kernel
     switch slice_profile
@@ -18,6 +17,7 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
         slice_pos = slices_y(slice);
         switch slice_profile
             case 'gaussian'
+                % Kernel is normalised in real space (mm)
                 kernel_shifted = exp(-(((y-slice_pos)/sigma).^2)/2)/(sigma*sqrt(2*pi));
         end
         excitation = repmat(kernel_shifted,(fov/sim_resn)+1,1);
@@ -25,11 +25,11 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
     %     imshow(phant_excited',[0 .1]);
     %     pause(.01)
         % Acquire echo
-        echo = fft(sum(phant_excited,2));
+        echo = fft(sum(phant_excited,2)*sim_resn);
         % Truncate echo to number of acquired samples - fov/acq_resn+1
         echo_truncated = [echo(1:fov/(2*acq_resn)+1); echo(sim_x_pts-fov/(2*acq_resn)+1:end)];
         % Reconstruct slice
-        image_slice = abs(ifft(echo_truncated));
+        image_slice = (sim_resn/acq_resn)*abs(ifft(echo_truncated));
         % Store slice in 2D image
         img(:,slice) = image_slice;
     end
