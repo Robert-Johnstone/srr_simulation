@@ -10,9 +10,9 @@ close all
 phantom_radius = 100; % mm
 
 % Acquisition parameters
-fov = 304; % mm, governs number of slices, too
+fov = 300; % mm - must be even multiple of slice spacing
 slice_thickness = 10; % mm
-slice_spacing = 2; % mm - must give even number of pixels in slice
+slice_spacing = 2; % mm - must divide fov to give even number
 acq_resn = 2; % mm, in-slice resolution
 slice_profile = 'gaussian';
 
@@ -45,7 +45,7 @@ ground_truth = mri_acq(phantom,fov,sim_resn,acq_resn,slice_spacing,slices,slice_
 
 % Perform SRR in through-slice (y) direction
 srr_img = zeros(size(img));
-kernel_width = sqrt(slice_thickness^2-acq_resn^2)/acq_resn; % In pixels
+kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % In y pixels (units of slice spacing)
 for column_x = 1:acq_x_pts
     srr_img(column_x,:) = srrecon(img(column_x,:),'gaussian',kernel_width,ground_truth(column_x,:));
 end

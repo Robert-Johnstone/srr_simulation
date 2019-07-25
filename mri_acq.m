@@ -27,7 +27,7 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
         % Acquire echo
         echo = fft(sum(phant_excited,2)*sim_resn);
         % Truncate echo to number of acquired samples - fov/acq_resn+1
-        echo_truncated = [echo(1:fov/(2*acq_resn)+1); echo(sim_x_pts-fov/(2*acq_resn)+1:end)];
+        echo_truncated = [echo(1:ceil(fov/(2*acq_resn))+1); echo(sim_x_pts-floor(fov/(2*acq_resn))+1:end)];
         % Reconstruct slice
         image_slice = (sim_resn/acq_resn)*abs(ifft(echo_truncated));
         % Store slice in 2D image
