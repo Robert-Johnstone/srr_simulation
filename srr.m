@@ -43,14 +43,6 @@ img = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,slice_profile
 % slice spacing
 ground_truth = mri_acq(phantom,fov,sim_resn,acq_resn,slice_spacing,slices,slice_profile,y);
 
-disp_size = [(acq_resn/disp_resn)*size(img,1),(slice_spacing/disp_resn)*size(img,2)];
-
-% Display acquired image
-show_image(img,disp_size,interp,'Acquired image')
-
-% Display ground truth image
-show_image(ground_truth,disp_size,interp,'Ground truth image')
-
 % Perform SRR in through-slice (y) direction
 srr_img = zeros(size(img));
 kernel_width = sqrt(slice_thickness^2-acq_resn^2)/acq_resn; % In pixels
@@ -58,11 +50,13 @@ for column_x = 1:acq_x_pts
     srr_img(column_x,:) = srrecon(img(column_x,:),'gaussian',kernel_width,ground_truth(column_x,:));
 end
 
-% Display SR reconstructed image
-show_image(srr_img,disp_size,interp,'SRR image')
-
-% Display error image
-show_image(srr_img-ground_truth,disp_size,interp,'Error image for SRR')
+% Display images
+disp_size = [(acq_resn/disp_resn)*size(img,1),(slice_spacing/disp_resn)*size(img,2)];
+show_image(img,disp_size,interp,'Acquired image',0)
+show_image(ground_truth,disp_size,interp,'Ground truth image',0)
+show_image(srr_img,disp_size,interp,'SRR image',0)
+show_image((img-ground_truth),disp_size,interp,'Absolute error image for acquired image',1)
+show_image((srr_img-ground_truth),disp_size,interp,'Absolute error image for SRR',1)
 
 % Compare central lines profiles
 figure
@@ -70,4 +64,5 @@ plot(img(ceil(acq_x_pts/2),:))
 hold on
 plot(srr_img(ceil(acq_x_pts/2),:))
 plot(ground_truth(ceil(acq_x_pts/2),:))
-title('Comparison of line profiles', 'Interpreter', 'latex')
+title('Comparison of central line profiles', 'Interpreter', 'latex')
+xlabel('y','Interpreter','latex')
