@@ -14,7 +14,7 @@ fov = 300; % mm - must be even multiple of slice spacing
 slice_thickness = 6; % mm
 slice_spacing = 2; % mm - must divide fov to give even number
 acq_resn = 2; % mm, in-slice resolution
-slice_profile = 'rect_adv'; % gaussian, rect
+slice_profile = 'sinc'; % gaussian, rect, rect_adv, sinc
 
 % Simulation parameters
 sim_resn = 0.1; % mm

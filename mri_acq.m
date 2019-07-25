@@ -30,6 +30,12 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
                     .* (abs(abs(y-slice_pos)-(slice_thickness-sim_resn)/2)/sim_resn);
                 % Normalise
                 kernel_shifted = kernel_shifted/(slice_thickness/sim_resn);
+            case 'sinc' % With FWHM = slice_thickness and truncated at first zero crossing
+                kernel_shifted = sinc(2*(y-slice_pos)*1.895/(pi*slice_thickness));
+                kernel_shifted = kernel_shifted.*(abs(2*(y-slice_pos)*1.895)<(pi*slice_thickness));
+                % Normalise - incorrect calculation for slice partially in
+                % volume
+                kernel_shifted = kernel_shifted/(sim_resn*sum(kernel_shifted));
         end
         excitation = repmat(kernel_shifted,(fov/sim_resn)+1,1);
         phant_excited = phantom.*excitation;
