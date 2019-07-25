@@ -6,6 +6,7 @@ function [hr_image] = srrecon(lr_image,kernel_type,kernel_width,ground_truth)
 %   input_image - 1D image
 %   kernel_type - kernel type, e.g. 'gaussian'
 %   kernel_width - the nominal width of the kernel, e.g. FWHM, in pixels
+%                   (units of slice spacing)
 
     % Set number of iterations for iterative back projection
     n_iter = 100;

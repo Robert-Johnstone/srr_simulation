@@ -14,10 +14,15 @@ fov = 300; % mm - must be even multiple of slice spacing
 slice_thickness = 6; % mm
 slice_spacing = 2; % mm - must divide fov to give even number
 acq_resn = 2; % mm, in-slice resolution
-slice_profile = 'gaussian';
+slice_profile = 'rect'; % gaussian, rect
 
 % Simulation parameters
 sim_resn = 0.1; % mm
+
+% SRR parameters
+% Project kernel width in y pixels (units of slice spacing)
+kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
+% kernel_width = slice_thickness/slice_spacing; % The 'wrong' width
 
 % Display options
 interp = 'nearest'; % Can be a cell array representing a blurring kernel
@@ -45,8 +50,6 @@ ground_truth = mri_acq(phantom,fov,sim_resn,acq_resn,slice_spacing,slices,slice_
 
 % Perform SRR in through-slice (y) direction
 srr_img = zeros(size(img));
-kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % In y pixels (units of slice spacing)
-% kernel_width = slice_thickness/slice_spacing; % The wrong width
 for column_x = 1:acq_x_pts
     srr_img(column_x,:) = srrecon(img(column_x,:),'gaussian',kernel_width,ground_truth(column_x,:));
 end

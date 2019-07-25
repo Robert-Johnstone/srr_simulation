@@ -1,7 +1,7 @@
 function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,slice_profile,y)
 %MRI_ACQ Acquires a 2D MR image
 
-    % Set up parameters for kernel
+    % Set up parameters for kernel (slice profile)
     switch slice_profile
         case 'gaussian'
             sigma = slice_thickness/(2*sqrt(2*log(2)));
@@ -15,10 +15,13 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
     for slice = 1:slices
         % Excite phantom
         slice_pos = slices_y(slice);
+        % slice profile is normalised in real space (mm)
         switch slice_profile
             case 'gaussian'
-                % Kernel is normalised in real space (mm)
                 kernel_shifted = exp(-(((y-slice_pos)/sigma).^2)/2)/(sigma*sqrt(2*pi));
+            case 'rect'
+                kernel_shifted = and((y-slice_pos)<slice_thickness/2, ...
+                    (y-slice_pos)>=-slice_thickness/2)/(slice_thickness/sim_resn);
         end
         excitation = repmat(kernel_shifted,(fov/sim_resn)+1,1);
         phant_excited = phantom.*excitation;
