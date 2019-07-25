@@ -11,7 +11,7 @@ phantom_radius = 100; % mm
 
 % Acquisition parameters
 fov = 300; % mm - must be even multiple of slice spacing
-slice_thickness = 10; % mm
+slice_thickness = 6; % mm
 slice_spacing = 2; % mm - must divide fov to give even number
 acq_resn = 2; % mm, in-slice resolution
 slice_profile = 'gaussian';
@@ -46,6 +46,7 @@ ground_truth = mri_acq(phantom,fov,sim_resn,acq_resn,slice_spacing,slices,slice_
 % Perform SRR in through-slice (y) direction
 srr_img = zeros(size(img));
 kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % In y pixels (units of slice spacing)
+% kernel_width = slice_thickness/slice_spacing; % The wrong width
 for column_x = 1:acq_x_pts
     srr_img(column_x,:) = srrecon(img(column_x,:),'gaussian',kernel_width,ground_truth(column_x,:));
 end
@@ -54,7 +55,7 @@ end
 disp_size = [(acq_resn/disp_resn)*size(img,1),(slice_spacing/disp_resn)*size(img,2)];
 show_image(img,disp_size,interp,'Acquired image',0)
 show_image(ground_truth,disp_size,interp,'Ground truth image',0)
-show_image(srr_img,disp_size,interp,'SRR image',0)
+show_image(srr_img,disp_size,interp,'SRR image (magnitude)',0)
 show_image((img-ground_truth),disp_size,interp,'Absolute error image for acquired image',1)
 show_image((srr_img-ground_truth),disp_size,interp,'Absolute error image for SRR',1)
 
