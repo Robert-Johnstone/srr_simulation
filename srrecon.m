@@ -8,13 +8,19 @@ function [hr_image] = srrecon(lr_image,kernel_type,kernel_width,ground_truth)
 %   kernel_width - the nominal width of the kernel, e.g. FWHM, in pixels
 
     % Set number of iterations for iterative back projection
-    n_iter = 1;
+    n_iter = 100;
 
     % Create forward and backward projection kernels
-    m = 2; % Multiplier used to set how big vector representing kernel is
+    m = 3; % Multiplier used to set how big vector representing kernel is
     n_kernel_pts = ceil(kernel_width)*m+1;
+    % Make sure kernel and image either both have an odd number or both
+    % have an even number of pixels. This avoids conv function introducing 
+    % a shift
+    if mod(n_kernel_pts,2)~=mod(size(lr_image,2),2)
+        n_kernel_pts = n_kernel_pts+1;
+    end
     fp_kernel = zeros(n_kernel_pts,1);
-    kernel_pts = linspace(-m*ceil(kernel_width)/2,m*ceil(kernel_width)/2,n_kernel_pts);
+    kernel_pts = linspace(-(n_kernel_pts-1)/2,(n_kernel_pts-1)/2,n_kernel_pts);
     switch kernel_type
         case 'gaussian'
             sigma = kernel_width/(2*sqrt(2*log(2)));
