@@ -38,27 +38,8 @@ interp = 'cubic'; % Can be a cell array representing a blurring kernel
 disp_resn = 0.5; % mm
 disp_size = [(acq_resn/disp_resn)*(fov/acq_resn+1),(slice_spacing*slices/disp_resn)];
 
-% Define phantom
-[X,Y] = meshgrid(x,y);
-phantom = double((X.^2+Y.^2)<phantom_radius^2);
-% Add rectangular insert
-rect_centre = [-30 40];
-rect_height = 40; % mm
-rect_width = 40; % mm
-rect_angle = 45; % mm
-phantom(and(abs((X*cosd(rect_angle)-Y*sind(rect_angle))-rect_centre(1))<(rect_width/2), ...
-    abs((Y*cosd(rect_angle)+X*sind(rect_angle))-rect_centre(2))<(rect_height/2))) = 0;
-% Add ellipsoid
-elip_centre = [40 -40];
-elip_height = 25; % mm
-elip_width = 60; % mm
-phantom((((X-elip_centre(1)).^2)./(elip_width/2)^2) + ...
-    (((Y-elip_centre(2)).^2)./(elip_height/2)^2) < 1) = 0.2;
-% Add circle
-circ_centre = [-40 -20];
-circ_diam = 40; % mm
-phantom(((X-circ_centre(1)).^2) + ...
-    ((Y-circ_centre(2)).^2) < ((circ_diam/2)^2)) = 0.4;
+% Generate phantom
+phantom = make_phantom(phantom_radius,fov,sim_resn);
 show_image(phantom,disp_size,'cubic','Phantom',0)
 
 % Acquire MR image
