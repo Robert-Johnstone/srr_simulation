@@ -9,7 +9,10 @@ function [hr_image] = srrecon(lr_image,kernel_type,kernel_width,ground_truth)
 %                   (units of slice spacing)
 
     % Set number of iterations for iterative back projection
-    n_iter = 100;
+    max_iter = 1000;
+    
+    % Switch to turn plotting errors on and off
+    plot_errors = 0;
 
     % Create forward and backward projection kernels
     m = 3; % Multiplier used to set how big vector representing kernel is
@@ -32,19 +35,32 @@ function [hr_image] = srrecon(lr_image,kernel_type,kernel_width,ground_truth)
     % Create initial high resultion image guess
     hr_image = lr_image;
 
-%     figure
-%     plot(0,norm(hr_image-ground_truth),'x')
-%     hold on
-    
-    for i = 1:n_iter
+    if plot_errors
+        figure
+        plot(0,norm(hr_image-ground_truth),'x')
+        hold on
+    end
+    last_error = Inf;
+
+    for i = 1:max_iter
         % Forward project
         lr_image_guess = conv(hr_image,fp_kernel,'same');
         % Find error
         lr_image_error = lr_image_guess-lr_image;
         % Back project error
         output_image_error = conv(lr_image_error,bp_kernel,'same');
-        hr_image = hr_image-output_image_error;
-%         plot(i,norm(hr_image-ground_truth),'x')
+        hr_image_temp = hr_image-output_image_error;
+        % Calculate error metric and bail out if it is getting bigger
+        current_error = norm(hr_image_temp-ground_truth);
+        if current_error > last_error
+            break
+        else
+            last_error = current_error;
+            hr_image = hr_image_temp;
+        end
+        if plot_errors
+            plot(i,norm(hr_image-ground_truth),'x')
+        end
     end
 end
 
