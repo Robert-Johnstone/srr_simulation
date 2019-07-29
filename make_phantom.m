@@ -6,7 +6,7 @@ function phantom = make_phantom(phantom_radius,fov,sim_resn)
     y = linspace(-fov/2,+fov/2,sim_y_pts);
     x = linspace(-fov/2,+fov/2,sim_x_pts);
     % Define phantom
-    [X,Y] = meshgrid(x,y);
+    [Y,X] = meshgrid(x,y);
     phantom = double((X.^2+Y.^2)<phantom_radius^2);
     % Add rectangular insert
     rect_centre = [-30 40]*(phantom_radius/100);

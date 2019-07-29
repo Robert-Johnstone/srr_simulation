@@ -26,11 +26,11 @@ kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'rig
 
 % Derived parameters
 sim_y_pts = (fov/sim_resn)+1; % Number of simulation points in y-direction
-sim_x_pts = (fov/sim_resn)+1; % Number of simulation points in y-direction
+sim_x_pts = (fov/sim_resn)+1; % Number of simulation points in x-direction
 y = linspace(-fov/2,+fov/2,sim_y_pts); % Simulated y points
 x = linspace(-fov/2,+fov/2,sim_x_pts); % Simulated x points
 acq_y_pts = (fov/acq_resn)+1; % Number of acquired points in y-direction
-acq_x_pts = (fov/acq_resn)+1; % Number of acquired points in y-direction
+acq_x_pts = (fov/acq_resn)+1; % Number of acquired points in x-direction
 slices = (fov/slice_spacing)+1; % Number of slices
 
 % Display options
