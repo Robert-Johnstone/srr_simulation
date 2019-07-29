@@ -5,6 +5,13 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
     switch slice_profile
         case 'gaussian'
             sigma = slice_thickness/(2*sqrt(2*log(2)));
+        case 'rect'
+        case 'rect_adv'
+        case 'sinc'
+        otherwise
+            % Assume that a filename has been specifed and load slice
+            % profile
+            load(slice_profile,'profile');
     end
 
     sim_x_pts = (fov/sim_resn)+1;
@@ -36,7 +43,12 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
                 % Normalise - incorrect calculation for slice partially in
                 % volume
                 kernel_shifted = kernel_shifted/(sim_resn*sum(kernel_shifted));
-        end
+            otherwise
+                kernel_shifted = interp1((-0.24:1e-6:0.24)*slice_thickness/6,profile,(y-slice_pos)/1000,'linear',0);
+                % Normalise - incorrect calculation for slice partially in
+                % volume
+                kernel_shifted = kernel_shifted/(sim_resn*sum(kernel_shifted));
+       end
         excitation = repmat(kernel_shifted,(fov/sim_resn)+1,1);
         phant_excited = phantom.*excitation;
     %     imshow(phant_excited',[0 .1]);

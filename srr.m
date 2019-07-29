@@ -14,7 +14,7 @@ fov = 300; % mm - must be even multiple of slice spacing
 slice_thickness = 6; % mm
 slice_spacing = 2; % mm - must divide fov to give even number
 acq_resn = 2; % mm, in-slice resolution
-slice_profile = 'gaussian'; % gaussian, rect, rect_adv, sinc
+slice_profile = 'sg_150_100_167.mat'; % gaussian, rect, rect_adv, sinc, <filename>
 
 % Simulation parameters
 sim_resn = 0.2; % mm
@@ -25,13 +25,13 @@ kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'rig
 % kernel_width = slice_thickness/slice_spacing; % The 'wrong' width
 
 % Derived parameters
-sim_y_pts = (fov/sim_resn)+1;
-sim_x_pts = (fov/sim_resn)+1;
-y = linspace(-fov/2,+fov/2,sim_y_pts);
-x = linspace(-fov/2,+fov/2,sim_x_pts);
-acq_y_pts = (fov/acq_resn)+1;
-acq_x_pts = (fov/acq_resn)+1;
-slices = (fov/slice_spacing)+1;
+sim_y_pts = (fov/sim_resn)+1; % Number of simulation points in y-direction
+sim_x_pts = (fov/sim_resn)+1; % Number of simulation points in y-direction
+y = linspace(-fov/2,+fov/2,sim_y_pts); % Simulated y points
+x = linspace(-fov/2,+fov/2,sim_x_pts); % Simulated x points
+acq_y_pts = (fov/acq_resn)+1; % Number of acquired points in y-direction
+acq_x_pts = (fov/acq_resn)+1; % Number of acquired points in y-direction
+slices = (fov/slice_spacing)+1; % Number of slices
 
 % Display options
 interp = 'cubic'; % Can be a cell array representing a blurring kernel
