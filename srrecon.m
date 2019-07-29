@@ -1,13 +1,13 @@
-function [hr_image] = srrecon(lr_image,fp_kernel_type,fp_width,bp_kernel_type,bp_width,ground_truth)
+function [hr_image] = srrecon(lr_image,fp_kernel_type,fp_width,bp_kernel_type,ground_truth)
 %SRRECON Performs a super-resolution reconstruction
 %   Takes a 1D image vector and, using a specified kernel_type, performed a
 %   super-resolution reconstruction
 %
 %   input_image - 1D image
 %   fp_kernel - FP kernel type, e.g. 'gaussian',<filename>
-%   bp_kernel - BP kernel type, e.g. 'gaussian',<filename>
-%   kernel_width - the nominal width of the kernel, e.g. FWHM, in pixels
+%   fp_width - the nominal width of the kernel, e.g. FWHM, in pixels
 %                   (units of slice spacing)
+%   bp_kernel - BP kernel type, e.g. 'gaussian',<filename>
 
     % Set number of iterations for iterative back projection
     max_iter = 1000;
@@ -15,7 +15,7 @@ function [hr_image] = srrecon(lr_image,fp_kernel_type,fp_width,bp_kernel_type,bp
     % Switch to turn plotting errors on and off
     plot_errors = 0;
 
-    % Create forward and backward projection kernels
+    % Create forward projection kernel
     m = 3; % Multiplier used to set how big vector representing kernel is
     n_kernel_pts = ceil(fp_width)*m+1;
     % Make sure kernel and image either both have an odd number or both
@@ -24,14 +24,30 @@ function [hr_image] = srrecon(lr_image,fp_kernel_type,fp_width,bp_kernel_type,bp
     if mod(n_kernel_pts,2)~=mod(size(lr_image,2),2)
         n_kernel_pts = n_kernel_pts+1;
     end
-    fp_kernel = zeros(n_kernel_pts,1);
     kernel_pts = linspace(-(n_kernel_pts-1)/2,(n_kernel_pts-1)/2,n_kernel_pts);
     switch fp_kernel_type
         case 'gaussian'
             sigma = fp_width/(2*sqrt(2*log(2)));
             fp_kernel = exp(-((kernel_pts/sigma).^2)/2)/(sigma*sqrt(2*pi));
+        otherwise
+            % Load saved profile
+            load(fp_kernel_type,'profile');
+            spw = 6; % Conventional slice width for saved slice profile, mm
+            spr = 0.001; % Conventional resolution for saved slice profile, mm
+            fp_kernel = interp1((-0.24:1e-6:0.24)*fp_width/spw,profile,kernel_pts*spr,'linear',0);
+            % Normalise
+            fp_kernel = fp_kernel/sum(fp_kernel);
     end
-    bp_kernel = fp_kernel;
+    
+    % Create backward projection kernel
+    if strcmp(fp_kernel_type,bp_kernel_type)
+        bp_kernel = fp_kernel;
+    else
+        if strcmp(bp_kernel_type,'gaussian')
+            sigma = fp_width/(2*sqrt(2*log(2)));
+            bp_kernel = exp(-((kernel_pts/sigma).^2)/2)/(sigma*sqrt(2*pi));
+        end
+    end
     
     % Create initial high resultion image guess
     hr_image = lr_image;
