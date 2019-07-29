@@ -12,6 +12,7 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
             % Assume that a filename has been specifed and load slice
             % profile
             load(slice_profile,'profile');
+            spw = 6; % Conventional slice profile width for saved slice profile, mm
     end
 
     sim_x_pts = (fov/sim_resn)+1;
@@ -44,10 +45,10 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
                 % volume
                 kernel_shifted = kernel_shifted/(sim_resn*sum(kernel_shifted));
             otherwise
-                kernel_shifted = interp1((-0.24:1e-6:0.24)*slice_thickness/6,profile,(y-slice_pos)/1000,'linear',0);
+                kernel_shifted = interp1((-0.24:1e-6:0.24)*slice_thickness/spw,profile,(y-slice_pos)/1000,'linear',0);
                 % Normalise - incorrect calculation for slice partially in
                 % volume
-                kernel_shifted = kernel_shifted/(sum(profile)*slice_thickness/(1000*6));
+                kernel_shifted = kernel_shifted/(sum(profile)*slice_thickness/(1000*spw));
        end
         excitation = repmat(kernel_shifted,(fov/sim_resn)+1,1);
         phant_excited = phantom.*excitation;
