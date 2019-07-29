@@ -47,7 +47,7 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
                 kernel_shifted = interp1((-0.24:1e-6:0.24)*slice_thickness/6,profile,(y-slice_pos)/1000,'linear',0);
                 % Normalise - incorrect calculation for slice partially in
                 % volume
-                kernel_shifted = kernel_shifted/(sim_resn*sum(kernel_shifted));
+                kernel_shifted = kernel_shifted/(sum(profile)*slice_thickness/(1000*6));
        end
         excitation = repmat(kernel_shifted,(fov/sim_resn)+1,1);
         phant_excited = phantom.*excitation;
