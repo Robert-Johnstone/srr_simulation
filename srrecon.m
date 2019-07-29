@@ -1,10 +1,11 @@
-function [hr_image] = srrecon(lr_image,kernel_type,kernel_width,ground_truth)
+function [hr_image] = srrecon(lr_image,fp_kernel_type,fp_width,bp_kernel_type,bp_width,ground_truth)
 %SRRECON Performs a super-resolution reconstruction
 %   Takes a 1D image vector and, using a specified kernel_type, performed a
 %   super-resolution reconstruction
 %
 %   input_image - 1D image
-%   kernel_type - kernel type, e.g. 'gaussian'
+%   fp_kernel - FP kernel type, e.g. 'gaussian',<filename>
+%   bp_kernel - BP kernel type, e.g. 'gaussian',<filename>
 %   kernel_width - the nominal width of the kernel, e.g. FWHM, in pixels
 %                   (units of slice spacing)
 
@@ -16,7 +17,7 @@ function [hr_image] = srrecon(lr_image,kernel_type,kernel_width,ground_truth)
 
     % Create forward and backward projection kernels
     m = 3; % Multiplier used to set how big vector representing kernel is
-    n_kernel_pts = ceil(kernel_width)*m+1;
+    n_kernel_pts = ceil(fp_width)*m+1;
     % Make sure kernel and image either both have an odd number or both
     % have an even number of pixels. This avoids conv function introducing 
     % a shift
@@ -25,9 +26,9 @@ function [hr_image] = srrecon(lr_image,kernel_type,kernel_width,ground_truth)
     end
     fp_kernel = zeros(n_kernel_pts,1);
     kernel_pts = linspace(-(n_kernel_pts-1)/2,(n_kernel_pts-1)/2,n_kernel_pts);
-    switch kernel_type
+    switch fp_kernel_type
         case 'gaussian'
-            sigma = kernel_width/(2*sqrt(2*log(2)));
+            sigma = fp_width/(2*sqrt(2*log(2)));
             fp_kernel = exp(-((kernel_pts/sigma).^2)/2)/(sigma*sqrt(2*pi));
     end
     bp_kernel = fp_kernel;

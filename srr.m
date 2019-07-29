@@ -52,7 +52,7 @@ ground_truth = mri_acq(phantom,fov,sim_resn,acq_resn,slice_spacing,slices,slice_
 % Perform SRR in through-slice (y) direction
 srr_img = zeros(size(img));
 for column_x = 1:acq_x_pts
-    srr_img(column_x,:) = srrecon(img(column_x,:),'gaussian',kernel_width,ground_truth(column_x,:));
+    srr_img(column_x,:) = srrecon(img(column_x,:),'gaussian',kernel_width,'gaussian',kernel_width,ground_truth(column_x,:));
 end
 
 % Display images fov/acq_resn+1,slices
