@@ -14,19 +14,15 @@ fov = 300; % mm - must be even multiple of slice spacing
 slice_thickness = 6; % mm
 slice_spacing = 2; % mm - must divide fov to give even number
 acq_resn = 2; % mm, in-slice resolution
-slice_profile = 'sinc'; % gaussian, rect, rect_adv, sinc
+slice_profile = 'gaussian'; % gaussian, rect, rect_adv, sinc
 
 % Simulation parameters
-sim_resn = 0.1; % mm
+sim_resn = 0.2; % mm
 
 % SRR parameters
 % Project kernel width in y pixels (units of slice spacing)
 kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
 % kernel_width = slice_thickness/slice_spacing; % The 'wrong' width
-
-% Display options
-interp = 'nearest'; % Can be a cell array representing a blurring kernel
-disp_resn = 0.5; % mm
 
 % Derived parameters
 sim_y_pts = (fov/sim_resn)+1;
@@ -37,9 +33,14 @@ acq_y_pts = (fov/acq_resn)+1;
 acq_x_pts = (fov/acq_resn)+1;
 slices = (fov/slice_spacing)+1;
 
-% Define phantom
-[X,Y] = meshgrid(x,y);
-phantom=double((X.^2+Y.^2)<phantom_radius^2);
+% Display options
+interp = 'cubic'; % Can be a cell array representing a blurring kernel
+disp_resn = 0.5; % mm
+disp_size = [(acq_resn/disp_resn)*(fov/acq_resn+1),(slice_spacing*slices/disp_resn)];
+
+% Generate phantom
+phantom = make_phantom(phantom_radius,fov,sim_resn);
+show_image(phantom,disp_size,'cubic','Phantom',0)
 
 % Acquire MR image
 img = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,slice_profile,y);
@@ -54,8 +55,7 @@ for column_x = 1:acq_x_pts
     srr_img(column_x,:) = srrecon(img(column_x,:),'gaussian',kernel_width,ground_truth(column_x,:));
 end
 
-% Display images
-disp_size = [(acq_resn/disp_resn)*size(img,1),(slice_spacing/disp_resn)*size(img,2)];
+% Display images fov/acq_resn+1,slices
 show_image(img,disp_size,interp,'Acquired image',0)
 show_image(ground_truth,disp_size,interp,'Ground truth image',0)
 show_image(srr_img,disp_size,interp,'SRR image (magnitude)',0)
