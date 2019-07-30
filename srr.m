@@ -15,7 +15,7 @@ slice_thickness = 6; % mm
 slice_spacing = 2; % mm - must divide fov to give even number
 acq_resn = 2; % mm, in-slice resolution
 slice_profile = 'sg_150_100_167.mat'; % gaussian, rect, rect_adv, sinc, <filename>
-acq_snr = 100; % Signal to noise ratio for acquisition
+acq_snr = inf; % Signal to noise ratio for acquisition
 
 % Simulation parameters
 sim_resn = 0.2; % mm
@@ -23,7 +23,7 @@ sim_resn = 0.2; % mm
 % SRR parameters
 % Project kernel width in y pixels (units of slice spacing)
 fp_kernel_type = 'sg_150_100_167.mat';
-bp_kernel_type = 'sg_150_100_167.mat';
+bp_kernel_type = 'gaussian';
 kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
 % kernel_width = slice_thickness/slice_spacing; % The 'wrong' width
 
@@ -40,10 +40,14 @@ slices = (fov/slice_spacing)+1; % Number of slices
 interp = 'cubic'; % Can be a cell array representing a blurring kernel
 disp_resn = 0.5; % mm
 disp_size = [(acq_resn/disp_resn)*(fov/acq_resn+1),(slice_spacing*slices/disp_resn)];
+save_images = 1;
 
 % Generate phantom
 phantom = make_phantom(phantom_radius,fov,sim_resn);
 show_image(phantom,disp_size,'cubic','Phantom',0)
+if save_images
+    imwrite(rot90(phantom), 'phantom.png')
+end
 
 % Acquire MR image
 img = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,slice_profile,y,acq_snr);
@@ -64,6 +68,16 @@ show_image(ground_truth,disp_size,interp,'Ground truth image',0)
 show_image(srr_img,disp_size,interp,'SRR image (magnitude)',0)
 show_image((img-ground_truth),disp_size,interp,'Absolute error image for acquired image',1)
 show_image((srr_img-ground_truth),disp_size,interp,'Absolute error image for SRR',1)
+
+% Save results as images
+if save_images
+    fn_root = [num2str(slice_thickness) 'mm_thick_' num2str(slice_spacing) 'mm_spacing_'];
+    imwrite(rot90(img), [fn_root 'mri_acq.png'])
+    imwrite(rot90(ground_truth), [fn_root 'mri_gt.png'])
+    imwrite(rot90(srr_img), [fn_root 'srr.png'])
+    imwrite(0.5+(rot90(img-ground_truth))*1, [fn_root 'acq_error.png'])
+    imwrite(0.5+(rot90(srr_img-ground_truth))*1, [fn_root 'srr_error.png'])
+end
 
 % Compare central lines profiles
 figure
