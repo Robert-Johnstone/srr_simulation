@@ -15,6 +15,7 @@ slice_thickness = 6; % mm
 slice_spacing = 2; % mm - must divide fov to give even number
 acq_resn = 2; % mm, in-slice resolution
 slice_profile = 'sg_150_100_167.mat'; % gaussian, rect, rect_adv, sinc, <filename>
+acq_snr = 100; % Signal to noise ratio for acquisition
 
 % Simulation parameters
 sim_resn = 0.2; % mm
@@ -22,7 +23,7 @@ sim_resn = 0.2; % mm
 % SRR parameters
 % Project kernel width in y pixels (units of slice spacing)
 fp_kernel_type = 'sg_150_100_167.mat';
-bp_kernel_type = 'gaussian';
+bp_kernel_type = 'sg_150_100_167.mat';
 kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
 % kernel_width = slice_thickness/slice_spacing; % The 'wrong' width
 
@@ -45,11 +46,11 @@ phantom = make_phantom(phantom_radius,fov,sim_resn);
 show_image(phantom,disp_size,'cubic','Phantom',0)
 
 % Acquire MR image
-img = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,slice_profile,y);
+img = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,slice_profile,y,acq_snr);
 
 % Create ground truth based on a slice thickness that corresponds to the
 % slice spacing
-ground_truth = mri_acq(phantom,fov,sim_resn,acq_resn,slice_spacing,slices,slice_profile,y);
+ground_truth = mri_acq(phantom,fov,sim_resn,acq_resn,slice_spacing,slices,slice_profile,y,inf);
 
 % Perform SRR in through-slice (y) direction
 srr_img = zeros(size(img));
