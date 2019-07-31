@@ -23,7 +23,7 @@ sim_resn = 0.2; % mm
 % SRR parameters
 % Project kernel width in y pixels (units of slice spacing)
 fp_kernel_type = 'sg_150_100_167.mat';
-bp_kernel_type = 'gaussian';
+bp_kernel_type = 'same';
 kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
 % kernel_width = slice_thickness/slice_spacing; % The 'wrong' width
 

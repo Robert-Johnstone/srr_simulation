@@ -40,7 +40,7 @@ function [hr_image] = srrecon(lr_image,fp_kernel_type,fp_width,bp_kernel_type,gr
     end
     
     % Create backward projection kernel
-    if strcmp(fp_kernel_type,bp_kernel_type)
+    if strcmp(fp_kernel_type,bp_kernel_type) || strcmp(bp_kernel_type,'same')
         bp_kernel = fp_kernel;
     else
         if strcmp(bp_kernel_type,'gaussian')
