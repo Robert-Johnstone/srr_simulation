@@ -1,5 +1,7 @@
-function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,slice_profile,y)
+function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,slice_profile,y,snr)
 %MRI_ACQ Acquires a 2D MR image
+
+    
 
     % Set up parameters for kernel (slice profile)
     switch slice_profile
@@ -56,15 +58,15 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
                 kernel_shifted = interp1((-0.24:1e-6:0.24)*slice_thickness/spw,profile,(y-slice_pos)*spr,'linear',0);
                 % Normalise
                 kernel_shifted = kernel_shifted/(sum(profile)*slice_thickness*spr/spw);
-       end
+        end
         excitation = repmat(kernel_shifted,(fov/sim_resn)+1,1);
         phant_excited = phantom.*excitation;
-    %     imshow(phant_excited',[0 .1]);
-    %     pause(.01)
         % Acquire echo
         echo = fft(sum(phant_excited,2)*sim_resn);
         % Truncate echo to number of acquired samples - fov/acq_resn+1
         echo_truncated = [echo(1:ceil(fov/(2*acq_resn))+1); echo(sim_x_pts-floor(fov/(2*acq_resn))+1:end)];
+        % Add some noise
+        echo_truncated = echo_truncated + randn(size(echo_truncated))*(fov/acq_resn+1)/snr;
         % Reconstruct slice
         image_slice = (sim_resn/acq_resn)*abs(ifft(echo_truncated));
         % Store slice in 2D image

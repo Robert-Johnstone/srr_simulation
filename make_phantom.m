@@ -12,7 +12,7 @@ function phantom = make_phantom(phantom_radius,fov,sim_resn)
     rect_centre = [-30 40]*(phantom_radius/100);
     rect_height = 40*(phantom_radius/100);
     rect_width = 40*(phantom_radius/100);
-    rect_angle = 45*(phantom_radius/100);
+    rect_angle = 45;
     phantom(and(abs((X*cosd(rect_angle)-Y*sind(rect_angle))-rect_centre(1))<(rect_width/2), ...
         abs((Y*cosd(rect_angle)+X*sind(rect_angle))-rect_centre(2))<(rect_height/2))) = 0;
     % Add ellipsoid
