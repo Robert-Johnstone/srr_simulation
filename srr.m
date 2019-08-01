@@ -95,3 +95,9 @@ plot(srr_img(ceil(acq_x_pts/2),:))
 plot(ground_truth(ceil(acq_x_pts/2),:))
 title('Comparison of central line profiles', 'Interpreter', 'latex')
 xlabel('y','Interpreter','latex')
+
+% Calculate errors
+l1error_srr = sum(sum(abs(srr_img-ground_truth)));
+fprintf('L1-error of SRR image: %d\n', l1error_srr)
+l1error_lr = sum(sum(abs(img-ground_truth)));
+fprintf('L1-error of LR image: %d\n', l1error_lr)
