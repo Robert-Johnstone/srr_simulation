@@ -53,9 +53,17 @@ ground_truth = mri_acq(phantom,fov,sim_resn,acq_resn,slice_spacing,slices,slice_
 
 % Perform SRR in through-slice (y) direction
 srr_img = zeros(size(img));
+fprintf('Performing SR recon: Column ');
+cstr = ''; % Counter string
 for column_x = 1:acq_x_pts
+    % Update counter
+    fprintf(repmat('\b',1,length(cstr))); % Perform carriage return
+    cstr = [num2str(column_x) ' of ' num2str(acq_x_pts)];
+    fprintf(cstr);
+    % Do SRR
     srr_img(column_x,:) = srrecon(img(column_x,:),fp_kernel_type,kernel_width,bp_kernel_type,ground_truth(column_x,:));
 end
+fprintf('\n');
 
 % Display images fov/acq_resn+1,slices
 show_image(img,disp_size,interp,'Acquired image',0)
