@@ -29,6 +29,8 @@ function [hr_image] = srrecon(lr_image,fp_kernel_type,fp_width,bp_kernel_type,gr
         case 'gaussian'
             sigma = fp_width/(2*sqrt(2*log(2)));
             fp_kernel = exp(-((kernel_pts/sigma).^2)/2)/(sigma*sqrt(2*pi));
+        case 'generated'
+            fp_kernel = create_fp_kernel;
         otherwise
             % Load saved profile
             load(fp_kernel_type,'profile');
@@ -40,7 +42,7 @@ function [hr_image] = srrecon(lr_image,fp_kernel_type,fp_width,bp_kernel_type,gr
     end
     
     % Create backward projection kernel
-    if strcmp(fp_kernel_type,bp_kernel_type)
+    if strcmp(fp_kernel_type,bp_kernel_type) || strcmp(bp_kernel_type,'same')
         bp_kernel = fp_kernel;
     else
         if strcmp(bp_kernel_type,'gaussian')
