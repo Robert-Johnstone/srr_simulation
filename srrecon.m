@@ -10,10 +10,13 @@ function [hr_image] = srrecon(lr_image,fp_kernel_type,fp_width,bp_kernel_type,gr
 %   bp_kernel - BP kernel type, e.g. 'gaussian',<filename>
 
     % Set number of iterations for iterative back projection
-    max_iter = 1000;
+    max_iter = 10;
     
     % Switch to turn plotting errors on and off
     plot_errors = 0;
+    
+    % Switch for terminating optimisation if error increases
+    diverge_stop = 0;
 
     % Create forward projection kernel
     m = 3; % Multiplier used to set how big vector representing kernel is
@@ -30,7 +33,7 @@ function [hr_image] = srrecon(lr_image,fp_kernel_type,fp_width,bp_kernel_type,gr
             sigma = fp_width/(2*sqrt(2*log(2)));
             fp_kernel = exp(-((kernel_pts/sigma).^2)/2)/(sigma*sqrt(2*pi));
         case 'generated'
-            fp_kernel = create_fp_kernel;
+            fp_kernel = create_fp_kernel(n_kernel_pts);
         otherwise
             % Load saved profile
             load(fp_kernel_type,'profile');
@@ -68,14 +71,18 @@ function [hr_image] = srrecon(lr_image,fp_kernel_type,fp_width,bp_kernel_type,gr
         lr_image_error = lr_image_guess-lr_image;
         % Back project error
         output_image_error = conv(lr_image_error,bp_kernel,'same');
-        hr_image_temp = hr_image-output_image_error;
-        % Calculate error metric and bail out if it is getting bigger
-        current_error = norm(hr_image_temp-ground_truth);
-        if current_error > last_error
-            break
+        if diverge_stop
+            hr_image_temp = hr_image-output_image_error;
+            % Calculate error metric and bail out if it is getting bigger
+            current_error = norm(hr_image_temp-ground_truth);
+            if current_error > last_error
+                break
+            else
+                last_error = current_error;
+                hr_image = hr_image_temp;
+            end
         else
-            last_error = current_error;
-            hr_image = hr_image_temp;
+            hr_image = hr_image-output_image_error;
         end
         if plot_errors
             plot(i,norm(hr_image-ground_truth),'x')
