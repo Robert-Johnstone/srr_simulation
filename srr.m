@@ -97,7 +97,7 @@ title('Comparison of central line profiles', 'Interpreter', 'latex')
 xlabel('y','Interpreter','latex')
 
 % Calculate errors
-l1error_srr = sum(sum(abs(srr_img-ground_truth)));
-fprintf('L1-error of SRR image: %d\n', l1error_srr)
-l1error_lr = sum(sum(abs(img-ground_truth)));
-fprintf('L1-error of LR image: %d\n', l1error_lr)
+l1error_srr = norm(srr_img(:)-ground_truth(:),1);
+fprintf('L1 error of SRR image: %d\n', l1error_srr)
+l1error_lr = norm(img(:)-ground_truth(:),1);
+fprintf('L1 error of LR image: %d\n', l1error_lr)
