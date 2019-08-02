@@ -22,7 +22,7 @@ sim_resn = 0.2; % mm
 
 % SRR parameters
 % Project kernel width in y pixels (units of slice spacing)
-fp_kernel_type = 'sg_150_100_167.mat';
+fp_kernel_type = 'generated';
 bp_kernel_type = 'same';
 kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
 % kernel_width = slice_thickness/slice_spacing; % The 'wrong' width
@@ -90,13 +90,16 @@ if save_images
 end
 
 % Compare central lines profiles
-figure
+fig = figure;
 plot(img(ceil(acq_x_pts/2),:))
 hold on
 plot(srr_img(ceil(acq_x_pts/2),:))
 plot(ground_truth(ceil(acq_x_pts/2),:))
 % title('Comparison of central line profiles', 'Interpreter', 'latex')
 xlabel('y','Interpreter','latex')
+ ax = gca;
+ax.YLim = [-0.05 1.05];
+fig.Position(3:4) = [560 210];
 if save_images
     saveas(gcf,[fn_root 'profiles'],'epsc')
 end
