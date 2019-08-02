@@ -1,18 +1,17 @@
-function fp_kernel = create_fp_kernel()
+function fp_kernel = create_fp_kernel(fp_kernel_size)
 %CREATE_FP_KERNEL Creates a forward projection kernel
 %
 %   Given a low-resolution slice profile and a high-resolution slice
 %   profile, the function attempts to find the foward projection kernel
 %   that, when convolved with the HR profile give the LR profile.
+%
+%   fp_kernel_size - size of kernel array (integer)
 
     % Set number of iterations for iterative back projection
     max_iter = 1000;
     
     % Switch to turn plotting errors on and off
     plot_errors = 0;
-
-    % Set size of fp_kernel (in pixels)
-    fp_kernel_size = 11;
     
     res_ratio = 3; % Ratio of HR to LR
     
