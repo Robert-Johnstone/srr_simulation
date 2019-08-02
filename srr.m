@@ -22,7 +22,7 @@ sim_resn = 0.2; % mm
 
 % SRR parameters
 % Project kernel width in y pixels (units of slice spacing)
-fp_kernel_type = 'generated';
+fp_kernel_type = 'sg_150_100_167.mat';
 bp_kernel_type = 'same';
 kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
 % kernel_width = slice_thickness/slice_spacing; % The 'wrong' width
@@ -46,7 +46,7 @@ save_images = 1;
 phantom = make_phantom(phantom_radius,fov,sim_resn);
 show_image(phantom,disp_size,'cubic','Phantom',0)
 if save_images
-    imwrite(rot90(phantom), 'phantom.png')
+    save_image(phantom,disp_size,'cubic','phantom.png')
 end
 
 % Acquire MR image
@@ -79,12 +79,14 @@ show_image((srr_img-ground_truth),disp_size,interp,'Absolute error image for SRR
 
 % Save results as images
 if save_images
-    fn_root = [num2str(slice_thickness) 'mm_thick_' num2str(slice_spacing) 'mm_spacing_'];
-    imwrite(rot90(img), [fn_root 'mri_acq.png'])
-    imwrite(rot90(ground_truth), [fn_root 'mri_gt.png'])
-    imwrite(rot90(srr_img), [fn_root 'srr.png'])
-    imwrite(0.5+(rot90(img-ground_truth))*1, [fn_root 'acq_error.png'])
-    imwrite(0.5+(rot90(srr_img-ground_truth))*1, [fn_root 'srr_error.png'])
+    fn_root = [num2str(slice_thickness) 'mm_at_' num2str(slice_spacing) 'mm_'];
+    fn_root = [fn_root fp_kernel_type '_'];
+    fn_root = regexprep(fn_root,'.mat',''); % Remove .mat from filename
+    save_image(img,disp_size,interp,[fn_root 'mri_acq.png'])
+    save_image(ground_truth,disp_size,interp,[fn_root 'mri_gt.png'])
+    save_image(srr_img,disp_size,interp, [fn_root 'srr.png'])
+    save_image(0.5+(img-ground_truth),disp_size,interp, [fn_root 'acq_error.png'])
+    save_image(0.5+(srr_img-ground_truth),disp_size,interp,[fn_root 'srr_error.png'])
 end
 
 % Compare central lines profiles
@@ -93,8 +95,11 @@ plot(img(ceil(acq_x_pts/2),:))
 hold on
 plot(srr_img(ceil(acq_x_pts/2),:))
 plot(ground_truth(ceil(acq_x_pts/2),:))
-title('Comparison of central line profiles', 'Interpreter', 'latex')
+% title('Comparison of central line profiles', 'Interpreter', 'latex')
 xlabel('y','Interpreter','latex')
+if save_images
+    saveas(gcf,[fn_root 'profiles'],'epsc')
+end
 
 % Calculate errors
 l1error_srr = norm(srr_img(:)-ground_truth(:),1);
