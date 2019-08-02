@@ -22,7 +22,7 @@ sim_resn = 0.2; % mm
 
 % SRR parameters
 % Project kernel width in y pixels (units of slice spacing)
-fp_kernel_type = 'generated';
+fp_kernel_type = 'gaussian';
 bp_kernel_type = 'same';
 kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
 % kernel_width = slice_thickness/slice_spacing; % The 'wrong' width
@@ -41,6 +41,7 @@ interp = 'cubic'; % Can be a cell array representing a blurring kernel
 disp_resn = 0.5; % mm
 disp_size = [(acq_resn/disp_resn)*(fov/acq_resn+1),(slice_spacing*slices/disp_resn)];
 save_images = 1;
+bw = 0; % Black and white plots
 
 % Generate phantom
 phantom = make_phantom(phantom_radius,fov,sim_resn);
@@ -91,10 +92,17 @@ end
 
 % Compare central lines profiles
 fig = figure;
-plot(img(ceil(acq_x_pts/2),:))
-hold on
-plot(srr_img(ceil(acq_x_pts/2),:))
-plot(ground_truth(ceil(acq_x_pts/2),:))
+if bw
+    plot(img(ceil(acq_x_pts/2),:),'k--')
+    hold on
+    plot(srr_img(ceil(acq_x_pts/2),:),'k')
+    plot(ground_truth(ceil(acq_x_pts/2),:),'k:')
+else
+    plot(img(ceil(acq_x_pts/2),:))
+    hold on
+    plot(srr_img(ceil(acq_x_pts/2),:))
+    plot(ground_truth(ceil(acq_x_pts/2),:))
+end
 % title('Comparison of central line profiles', 'Interpreter', 'latex')
 xlabel('y','Interpreter','latex')
  ax = gca;
