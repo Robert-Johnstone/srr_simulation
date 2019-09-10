@@ -20,10 +20,17 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
 
     sim_x_pts = (fov/sim_resn)+1;
 
+    fprintf('Performing MRI scan: Slice ');
+    cstr = ''; % Counter string
+
     % Iterate through the slices, exciting a slice and acquiring
     slices_y = linspace(-fov/2,+fov/2,slices);
     img = zeros(fov/acq_resn+1,slices);
     for slice = 1:slices
+        % Update counter
+        fprintf(repmat('\b',1,length(cstr))); % Perform carriage return
+        cstr = [num2str(slice) ' of ' num2str(slices)];
+        fprintf(cstr);
         % Excite phantom
         slice_pos = slices_y(slice);
         % slice profile is normalised in real space (mm)
@@ -65,5 +72,6 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
         % Store slice in 2D image
         img(:,slice) = image_slice;
     end
+    fprintf('\n');
 end
 
