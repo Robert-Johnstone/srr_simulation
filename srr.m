@@ -34,6 +34,8 @@ y = linspace(-fov/2,+fov/2,sim_y_pts); % Simulated y points
 x = linspace(-fov/2,+fov/2,sim_x_pts); % Simulated x points
 acq_y_pts = (fov/acq_resn)+1; % Number of acquired points in y-direction
 acq_x_pts = (fov/acq_resn)+1; % Number of acquired points in x-direction
+y_acq = linspace(-fov/2,+fov/2,acq_y_pts); % Acquired y points
+x_acq = linspace(-fov/2,+fov/2,acq_x_pts); % Acquired x points
 slices = (fov/slice_spacing)+1; % Number of slices
 
 % Display options
@@ -93,23 +95,46 @@ end
 % Compare central lines profiles
 fig = figure;
 if bw
-    plot(img(ceil(acq_x_pts/2),:),'k--')
+    plot(x_acq,img(ceil(acq_x_pts/2),:),'k--')
     hold on
-    plot(srr_img(ceil(acq_x_pts/2),:),'k')
-    plot(ground_truth(ceil(acq_x_pts/2),:),'k:')
+    plot(x_acq,srr_img(ceil(acq_x_pts/2),:),'k')
+    plot(x_acq,ground_truth(ceil(acq_x_pts/2),:),'k:')
 else
-    plot(img(ceil(acq_x_pts/2),:))
+    plot(x_acq,img(ceil(acq_x_pts/2),:),'b')
     hold on
-    plot(srr_img(ceil(acq_x_pts/2),:))
-    plot(ground_truth(ceil(acq_x_pts/2),:))
+    plot(x_acq,srr_img(ceil(acq_x_pts/2),:),'r')
+    plot(x_acq,ground_truth(ceil(acq_x_pts/2),:),'g')
 end
 % title('Comparison of central line profiles', 'Interpreter', 'latex')
-xlabel('y','Interpreter','latex')
- ax = gca;
+xlabel('y / mm','Interpreter','latex')
+ax = gca;
 ax.YLim = [-0.05 1.05];
 fig.Position(3:4) = [560 210];
 if save_images
     saveas(gcf,[fn_root 'profiles'],'epsc')
+end
+% Plot Fourier transform
+fig = figure;
+if bw
+    plotSpectrum(img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+        [0 500/slice_spacing],[-100 0],1,'k','--')
+    hold on
+    plotSpectrum(srr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+        [0 500/slice_spacing],[-100 0],1,'k','-')
+    plotSpectrum(ground_truth(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+        [0 500/slice_spacing],[-100 0],1,'k',':')
+else
+    plotSpectrum(img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+        [0 500/slice_spacing],[-100 0],1,'b','-')
+    hold on
+    plotSpectrum(srr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+        [0 500/slice_spacing],[-100 0],1,'r','-')
+    plotSpectrum(ground_truth(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+        [0 500/slice_spacing],[-100 0],1,'g','-')
+end
+fig.Position(3:4) = [560 210];
+if save_images
+    saveas(gcf,[fn_root 'profiles_ft'],'epsc')
 end
 
 % Calculate errors
