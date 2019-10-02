@@ -27,22 +27,24 @@ function fp_kernel = create_fp_kernel(fp_kernel_size)
     load('sg_150_100_167.mat','profile');
     spw = 6; % Conventional slice width for saved slice profile, mm
     spr = 0.001; % Conventional resolution for saved slice profile, mm
-    slice_profile_lr = interp1((-0.24:1e-6:0.24)*res_ratio/spw,profile,kernel_pts*spr,'linear',0);
     slice_profile_hr = interp1((-0.24:1e-6:0.24)/spw,profile,kernel_pts*spr,'linear',0);
+    lr_profile_size = 2*fp_kernel_size-1;
+    lr_profile_pts = linspace(-(lr_profile_size-1)/2,(lr_profile_size-1)/2,lr_profile_size);
+    slice_profile_lr = interp1((-0.24:1e-6:0.24)*res_ratio/spw,profile,lr_profile_pts*spr,'linear',0);
     % Normalise
     slice_profile_lr = slice_profile_lr/sum(slice_profile_lr);
     slice_profile_hr = slice_profile_hr/sum(slice_profile_hr);
     
-    % Create initial high resultion image guess
-    fp_kernel = slice_profile_lr;
+    % Create initial high resolution image guess
+    fp_kernel = zeros(1,fp_kernel_size);
 
     for i = 1:max_iter
         % Forward project using HR slice profile
-        slice_profile_lr_guess = conv(fp_kernel,slice_profile_hr,'same');
+        slice_profile_lr_guess = conv(fp_kernel,slice_profile_hr,'full');
         % Find error
         slice_profile_lr_error = slice_profile_lr_guess-slice_profile_lr;
         % Back project error using HR slice profile
-        slice_profile_hr_error = conv(slice_profile_lr_error,slice_profile_hr,'same');
+        slice_profile_hr_error = conv(slice_profile_hr,slice_profile_lr_error,'same');
         fp_kernel = fp_kernel-slice_profile_hr_error;
     end
     % Normalise

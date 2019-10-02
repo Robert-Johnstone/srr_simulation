@@ -4,7 +4,7 @@ function [hr_image] = srrecon(lr_image,fp_kernel_type,fp_width,bp_kernel_type,gr
 %   super-resolution reconstruction
 %
 %   input_image - 1D image
-%   fp_kernel - FP kernel type, e.g. 'gaussian',<filename>
+%   fp_kernel_type - FP kernel type, e.g. 'gaussian',<filename>
 %   fp_width - the nominal width of the kernel, e.g. FWHM, in pixels
 %                   (units of slice spacing)
 %   bp_kernel - BP kernel type, e.g. 'gaussian',<filename>
