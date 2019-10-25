@@ -67,7 +67,7 @@ function plot_curves(slice_spacing,fp_kernel_type,fp_width,fig_profile,fig_spect
     figure(fig_profile)
     plot(kernel_pts,fp_kernel,'Color',linecol,'LineStyle',markers)
     hold on
-    xlabel('z / pixels','Interpreter','latex')
+    xlabel('z / HR pixels','Interpreter','latex')
 
     % Plot Fourier transform
     figure(fig_spectrum)
