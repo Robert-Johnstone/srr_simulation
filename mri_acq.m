@@ -53,22 +53,28 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
                 kernel_shifted = kernel_shifted.*(abs(2*(y-slice_pos)*1.895)<(pi*slice_thickness));
                 % Normalise - incorrect calculation for slice partially in
                 % volume
-                kernel_shifted = kernel_shifted/(sim_resn*sum(kernel_shifted));
+                kernel_shifted = kernel_shifted/sum(kernel_shifted);
             otherwise
                 kernel_shifted = interp1((-0.24:1e-6:0.24)*slice_thickness/spw,profile,(y-slice_pos)*spr,'linear',0);
-                % Normalise
-                kernel_shifted = kernel_shifted/(sum(profile)*slice_thickness*spr/spw);
+                % Normalise - incorrect calculation for slice partially in
+                % volume
+                kernel_shifted = kernel_shifted/sum(kernel_shifted);
         end
         excitation = repmat(kernel_shifted,(fov/sim_resn)+1,1);
         phant_excited = phantom.*excitation;
         % Acquire echo
-        echo = fft(sum(phant_excited,2)*sim_resn);
+        echo = fft(sum(phant_excited,2))/sqrt(size(phant_excited,1));
         % Truncate echo to number of acquired samples - fov/acq_resn+1
         echo_truncated = [echo(1:ceil(fov/(2*acq_resn))+1); echo(sim_x_pts-floor(fov/(2*acq_resn))+1:end)];
-        % Add some noise
-        echo_truncated = echo_truncated + randn(size(echo_truncated))*(fov/acq_resn+1)/snr;
+        % Scale to match the truncation
+        echo_truncated = echo_truncated * sqrt((fov/acq_resn+1) / size(phant_excited,1));
+        % Add some noise with amplitude such that background noise in image
+        % has standard deviation equal to 1/SNR
+        echo_truncated = echo_truncated + ...
+            (randn(size(echo_truncated))+1i*randn(size(echo_truncated))) ...
+            * (2-pi/2)^(-.5)/snr;
         % Reconstruct slice
-        image_slice = (sim_resn/acq_resn)*abs(ifft(echo_truncated));
+        image_slice = abs(ifft(echo_truncated))*sqrt(size(echo_truncated,1));
         % Store slice in 2D image
         img(:,slice) = image_slice;
     end
