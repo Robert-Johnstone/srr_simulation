@@ -26,6 +26,7 @@ fp_kernel_type = 'gaussian'; % guassian, <filename>, generated
 bp_kernel_type = 'same'; % guassian, <filename>, generated, same [as FP kernel]
 kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
 % kernel_width = slice_thickness/slice_spacing; % The 'wrong' width
+% Note - kernel_width not used for 'generated' FP kernel
 
 % Derived parameters
 sim_y_pts = (fov/sim_resn)+1; % Number of simulation points in y-direction
@@ -39,6 +40,7 @@ x_acq = linspace(-fov/2,+fov/2,acq_x_pts); % Acquired x points
 slices = (fov/slice_spacing)+1; % Number of slices
 
 % Display options
+display_images = 0; % Whether to display images
 interp = 'cubic'; % Can be a cell array representing a blurring kernel
 disp_resn = 0.5; % mm
 disp_size = [(acq_resn/disp_resn)*(fov/acq_resn+1),(slice_spacing*slices/disp_resn)];
@@ -47,7 +49,9 @@ bw = 1; % Black and white plots
 
 % Generate phantom
 phantom = make_phantom(phantom_radius,fov,sim_resn);
-show_image(phantom,disp_size,'cubic','Phantom',0)
+if display_images
+    show_image(phantom,disp_size,'cubic','Phantom',0)
+end
 if save_images
     save_image(phantom,disp_size,'cubic','phantom.png')
 end
@@ -77,16 +81,18 @@ for column_x = 1:acq_x_pts
 end
 fprintf('\n');
 
-% Display images fov/acq_resn+1,slices
-show_image(lr_img,disp_size,interp,'Acquired LR image',0)
-show_image(hr_img,disp_size,interp,'Acquired HR image',0)
-show_image(ground_truth,disp_size,interp,'Ground truth image',0)
-show_image(srr_img,disp_size,interp,'SRR image (magnitude)',0)
-show_image((lr_img-ground_truth),disp_size,interp,'Absolute error image for acquired image',1)
-show_image((srr_img-ground_truth),disp_size,interp,'Absolute error image for SRR',1)
+if display_images
+    % Display images fov/acq_resn+1,slices
+    show_image(lr_img,disp_size,interp,'Acquired LR image',0)
+    show_image(hr_img,disp_size,interp,'Acquired HR image',0)
+    show_image(ground_truth,disp_size,interp,'Ground truth image',0)
+    show_image(srr_img,disp_size,interp,'SRR image (magnitude)',0)
+    show_image((lr_img-ground_truth),disp_size,interp,'Absolute error image for acquired image',1)
+    show_image((srr_img-ground_truth),disp_size,interp,'Absolute error image for SRR',1)
+end
 
-% Save results as images
 if save_images
+    % Save results as images
     fn_root = [num2str(slice_thickness) 'mm_at_' num2str(slice_spacing) 'mm_'];
     fn_root = [fn_root fp_kernel_type '_'];
     fn_root = regexprep(fn_root,'.mat',''); % Remove .mat from filename
