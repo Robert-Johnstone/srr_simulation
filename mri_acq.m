@@ -69,10 +69,10 @@ function [img] = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,sl
         % Scale to match the truncation
         echo_truncated = echo_truncated * sqrt((fov/acq_resn+1) / size(phant_excited,1));
         % Add some noise with amplitude such that background noise in image
-        % has standard deviation equal to 1/SNR
+        % has mean equal to 1/SNR
         echo_truncated = echo_truncated + ...
             (randn(size(echo_truncated))+1i*randn(size(echo_truncated))) ...
-            * (2-pi/2)^(-.5)/snr;
+            * sqrt(2/pi)/snr;
         % Reconstruct slice
         image_slice = abs(ifft(echo_truncated))*sqrt(size(echo_truncated,1));
         % Store slice in 2D image
