@@ -15,7 +15,7 @@ slice_thickness = 6; % mm
 slice_spacing = 2; % mm - must divide fov to give even number
 acq_resn = 2; % mm, in-slice resolution
 slice_profile = 'sg_150_100_167.mat'; % gaussian, rect, rect_adv, sinc, <filename>
-acq_snr = inf; % Signal to noise ratio for acquisition
+acq_snr = 10; % Signal to noise ratio for acquisition
 
 % Simulation parameters
 sim_resn = 0.2; % mm
@@ -41,6 +41,7 @@ slices = (fov/slice_spacing)+1; % Number of slices
 
 % Display options
 display_images = 0; % Whether to display images
+display_graphs = 0; % Whether to display graphs
 interp = 'cubic'; % Can be a cell array representing a blurring kernel
 disp_resn = 0.5; % mm
 disp_size = [(acq_resn/disp_resn)*(fov/acq_resn+1),(slice_spacing*slices/disp_resn)];
@@ -104,49 +105,51 @@ if save_images
     save_image(0.5+(srr_img-ground_truth),disp_size,interp,[fn_root 'srr_error.png'])
 end
 
-% Compare central lines profiles
-fig = figure;
-if bw
-    plot(x_acq,lr_img(ceil(acq_x_pts/2),:),'k--')
-    hold on
-    plot(x_acq,srr_img(ceil(acq_x_pts/2),:),'k')
-    plot(x_acq,ground_truth(ceil(acq_x_pts/2),:),'k:')
-else
-    plot(x_acq,lr_img(ceil(acq_x_pts/2),:),'b')
-    hold on
-    plot(x_acq,srr_img(ceil(acq_x_pts/2),:),'r')
-    plot(x_acq,ground_truth(ceil(acq_x_pts/2),:),'g')
-end
-% title('Comparison of central line profiles', 'Interpreter', 'latex')
-xlabel('y / mm','Interpreter','latex')
-ax = gca;
-ax.YLim = [-0.05 1.05];
-fig.Position(3:4) = [560 210];
-if save_images
-    saveas(gcf,[fn_root 'profiles'],'epsc')
-end
-% Plot Fourier transform
-fig = figure;
-if bw
-    plotSpectrum(lr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
-        [0 500/slice_spacing],[-100 0],1,'k','--')
-    hold on
-    plotSpectrum(srr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
-        [0 500/slice_spacing],[-100 0],1,'k','-')
-    plotSpectrum(ground_truth(ceil(acq_x_pts/2),:),fov/1000,'FT',...
-        [0 500/slice_spacing],[-100 0],1,'k',':')
-else
-    plotSpectrum(lr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
-        [0 500/slice_spacing],[-100 0],1,'b','-')
-    hold on
-    plotSpectrum(srr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
-        [0 500/slice_spacing],[-100 0],1,'r','-')
-    plotSpectrum(ground_truth(ceil(acq_x_pts/2),:),fov/1000,'FT',...
-        [0 500/slice_spacing],[-100 0],1,'g','-')
-end
-fig.Position(3:4) = [560 210];
-if save_images
-    saveas(gcf,[fn_root 'profiles_ft'],'epsc')
+if display_graphs
+    % Compare central lines profiles
+    fig = figure;
+    if bw
+        plot(x_acq,lr_img(ceil(acq_x_pts/2),:),'k--')
+        hold on
+        plot(x_acq,srr_img(ceil(acq_x_pts/2),:),'k')
+        plot(x_acq,ground_truth(ceil(acq_x_pts/2),:),'k:')
+    else
+        plot(x_acq,lr_img(ceil(acq_x_pts/2),:),'b')
+        hold on
+        plot(x_acq,srr_img(ceil(acq_x_pts/2),:),'r')
+        plot(x_acq,ground_truth(ceil(acq_x_pts/2),:),'g')
+    end
+    % title('Comparison of central line profiles', 'Interpreter', 'latex')
+    xlabel('y / mm','Interpreter','latex')
+    ax = gca;
+    ax.YLim = [-0.05 1.05];
+    fig.Position(3:4) = [560 210];
+    if save_images
+        saveas(gcf,[fn_root 'profiles'],'epsc')
+    end
+    % Plot Fourier transforms
+    fig = figure;
+    if bw
+        plotSpectrum(lr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+            [0 500/slice_spacing],[-100 0],1,'k','--')
+        hold on
+        plotSpectrum(srr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+            [0 500/slice_spacing],[-100 0],1,'k','-')
+        plotSpectrum(ground_truth(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+            [0 500/slice_spacing],[-100 0],1,'k',':')
+    else
+        plotSpectrum(lr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+            [0 500/slice_spacing],[-100 0],1,'b','-')
+        hold on
+        plotSpectrum(srr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+            [0 500/slice_spacing],[-100 0],1,'r','-')
+        plotSpectrum(ground_truth(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+            [0 500/slice_spacing],[-100 0],1,'g','-')
+    end
+    fig.Position(3:4) = [560 210];
+    if save_images
+        saveas(gcf,[fn_root 'profiles_ft'],'epsc')
+    end
 end
 
 % Calculate errors
