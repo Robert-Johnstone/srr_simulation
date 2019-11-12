@@ -21,7 +21,7 @@ acq_snr = inf; % Signal to noise ratio for acquisition
 sim_resn = 0.2; % mm
 
 % SRR parameters
-% Project kernel width in y pixels (units of slice spacing)
+% Projection kernel width in y pixels (units of slice spacing)
 fp_kernel_type = 'gaussian'; % guassian, <filename>, generated
 bp_kernel_type = 'same'; % guassian, <filename>, generated, same [as FP kernel]
 kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
