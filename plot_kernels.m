@@ -68,11 +68,13 @@ function plot_curves(slice_spacing,fp_kernel_type,fp_width,fig_profile,fig_spect
     plot(kernel_pts,fp_kernel,'Color',linecol,'LineStyle',markers)
     hold on
     xlabel('z / HR pixels','Interpreter','latex')
+    ax = gca;
+    ax.XLim = [-4 4];
 
     % Plot Fourier transform
     figure(fig_spectrum)
     plotSpectrum(fp_kernel,n_kernel_pts*slice_spacing/1000,'FT',...
-        [0 500/slice_spacing],[-100 0],0,linecol,markers)
+        [0 500/slice_spacing],[-100 0],1,linecol,markers)
     ax = gca;
-    ax.YLim = [0 1];
+    ax.YLim = [-40 0];
 end
