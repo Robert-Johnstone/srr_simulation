@@ -15,14 +15,14 @@ slice_thickness = 6; % mm
 slice_spacing = 2; % mm - must divide fov to give even number
 acq_resn = 2; % mm, in-slice resolution
 slice_profile = 'sg_150_100_167.mat'; % gaussian, rect, rect_adv, sinc, <filename>
-acq_snr = 10; % Signal to noise ratio for acquisition
+acq_snrs = [10,20,30,50,100,150,200,500,1000,inf]; % Signal to noise ratios for acquisition
 
 % Simulation parameters
 sim_resn = 0.2; % mm
 
 % SRR parameters
 % Projection kernel width in y pixels (units of slice spacing)
-fp_kernel_type = 'gaussian'; % guassian, <filename>, generated
+fp_kernel_type = 'gaussian'; % gaussian, <filename>, generated
 bp_kernel_type = 'same'; % guassian, <filename>, generated, same [as FP kernel]
 kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
 % kernel_width = slice_thickness/slice_spacing; % The 'wrong' width
@@ -45,8 +45,15 @@ display_graphs = 0; % Whether to display graphs
 interp = 'cubic'; % Can be a cell array representing a blurring kernel
 disp_resn = 0.5; % mm
 disp_size = [(acq_resn/disp_resn)*(fov/acq_resn+1),(slice_spacing*slices/disp_resn)];
-save_images = 1;
+save_images = 1; % Images will only be saved if they are first displayed
 bw = 1; % Black and white plots
+display_results = 1;
+save_results = 1;
+
+if save_results
+    % Open results file
+    % Write header row
+end
 
 % Generate phantom
 phantom = make_phantom(phantom_radius,fov,sim_resn);
@@ -57,105 +64,118 @@ if save_images
     save_image(phantom,disp_size,'cubic','phantom.png')
 end
 
-% Acquire noisy LR MR image
-lr_img = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,slice_profile,y,acq_snr);
-
-% Acquire noisy HR MR image with reduced SNR
-hr_img = mri_acq(phantom,fov,sim_resn,acq_resn,slice_spacing,slices,...
-    slice_profile,y,acq_snr*slice_spacing/slice_thickness);
-
 % Create ground truth based on a slice thickness that corresponds to the
 % slice spacing
 ground_truth = mri_acq(phantom,fov,sim_resn,acq_resn,slice_spacing,slices,slice_profile,y,inf);
 
-% Perform SRR in through-slice (y) direction
-srr_img = zeros(size(lr_img));
-fprintf('Performing SR recon: Column ');
-cstr = ''; % Counter string
-for column_x = 1:acq_x_pts
-    % Update counter
-    fprintf(repmat('\b',1,length(cstr))); % Perform carriage return
-    cstr = [num2str(column_x) ' of ' num2str(acq_x_pts)];
-    fprintf(cstr);
-    % Do SRR
-    srr_img(column_x,:) = srrecon(lr_img(column_x,:),fp_kernel_type,kernel_width,bp_kernel_type,ground_truth(column_x,:));
-end
-fprintf('\n');
+for acq_snr = acq_snrs
 
-if display_images
-    % Display images fov/acq_resn+1,slices
-    show_image(lr_img,disp_size,interp,'Acquired LR image',0)
-    show_image(hr_img,disp_size,interp,'Acquired HR image',0)
-    show_image(ground_truth,disp_size,interp,'Ground truth image',0)
-    show_image(srr_img,disp_size,interp,'SRR image (magnitude)',0)
-    show_image((lr_img-ground_truth),disp_size,interp,'Absolute error image for acquired image',1)
-    show_image((srr_img-ground_truth),disp_size,interp,'Absolute error image for SRR',1)
-end
+    % Acquire noisy LR MR image
+    lr_img = mri_acq(phantom,fov,sim_resn,acq_resn,slice_thickness,slices,...
+        slice_profile,y,acq_snr);
 
-if save_images
-    % Save results as images
-    fn_root = [num2str(slice_thickness) 'mm_at_' num2str(slice_spacing) 'mm_'];
-    fn_root = [fn_root fp_kernel_type '_'];
-    fn_root = regexprep(fn_root,'.mat',''); % Remove .mat from filename
-    save_image(lr_img,disp_size,interp,[fn_root 'mri_acq_lr.png'])
-    save_image(hr_img,disp_size,interp,[fn_root 'mri_acq_hr.png'])
-    save_image(ground_truth,disp_size,interp,[fn_root 'mri_gt.png'])
-    save_image(srr_img,disp_size,interp, [fn_root 'srr.png'])
-    save_image(0.5+(lr_img-ground_truth),disp_size,interp, [fn_root 'acq_error.png'])
-    save_image(0.5+(srr_img-ground_truth),disp_size,interp,[fn_root 'srr_error.png'])
-end
+    % Acquire noisy HR MR image with reduced SNR
+    hr_img = mri_acq(phantom,fov,sim_resn,acq_resn,slice_spacing,slices,...
+        slice_profile,y,acq_snr*slice_spacing/slice_thickness);
 
-if display_graphs
-    % Compare central lines profiles
-    fig = figure;
-    if bw
-        plot(x_acq,lr_img(ceil(acq_x_pts/2),:),'k--')
-        hold on
-        plot(x_acq,srr_img(ceil(acq_x_pts/2),:),'k')
-        plot(x_acq,ground_truth(ceil(acq_x_pts/2),:),'k:')
-    else
-        plot(x_acq,lr_img(ceil(acq_x_pts/2),:),'b')
-        hold on
-        plot(x_acq,srr_img(ceil(acq_x_pts/2),:),'r')
-        plot(x_acq,ground_truth(ceil(acq_x_pts/2),:),'g')
+    % Perform SRR in through-slice (y) direction
+    srr_img = zeros(size(lr_img));
+    fprintf('Performing SR recon: Column ');
+    cstr = ''; % Counter string
+    for column_x = 1:acq_x_pts
+        % Update counter
+        fprintf(repmat('\b',1,length(cstr))); % Perform carriage return
+        cstr = [num2str(column_x) ' of ' num2str(acq_x_pts)];
+        fprintf(cstr);
+        % Do SRR
+        srr_img(column_x,:) = srrecon(lr_img(column_x,:),fp_kernel_type,kernel_width,bp_kernel_type,ground_truth(column_x,:));
     end
-    % title('Comparison of central line profiles', 'Interpreter', 'latex')
-    xlabel('y / mm','Interpreter','latex')
-    ax = gca;
-    ax.YLim = [-0.05 1.05];
-    fig.Position(3:4) = [560 210];
+    fprintf('\n');
+
+    if display_images
+        % Display images fov/acq_resn+1,slices
+        show_image(lr_img,disp_size,interp,'Acquired LR image',0)
+        show_image(hr_img,disp_size,interp,'Acquired HR image',0)
+        show_image(ground_truth,disp_size,interp,'Ground truth image',0)
+        show_image(srr_img,disp_size,interp,'SRR image (magnitude)',0)
+        show_image((lr_img-ground_truth),disp_size,interp,'Absolute error image for acquired image',1)
+        show_image((srr_img-ground_truth),disp_size,interp,'Absolute error image for SRR',1)
+    end
+
     if save_images
-        saveas(gcf,[fn_root 'profiles'],'epsc')
+        % Save results as images
+        fn_root = [num2str(slice_thickness) 'mm_at_' num2str(slice_spacing) 'mm_'];
+        fn_root = [fn_root fp_kernel_type '_'];
+        fn_root = regexprep(fn_root,'.mat',''); % Remove .mat from filename
+        save_image(lr_img,disp_size,interp,[fn_root 'mri_acq_lr.png'])
+        save_image(hr_img,disp_size,interp,[fn_root 'mri_acq_hr.png'])
+        save_image(ground_truth,disp_size,interp,[fn_root 'mri_gt.png'])
+        save_image(srr_img,disp_size,interp, [fn_root 'srr.png'])
+        save_image(0.5+(lr_img-ground_truth),disp_size,interp, [fn_root 'acq_error.png'])
+        save_image(0.5+(srr_img-ground_truth),disp_size,interp,[fn_root 'srr_error.png'])
     end
-    % Plot Fourier transforms
-    fig = figure;
-    if bw
-        plotSpectrum(lr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
-            [0 500/slice_spacing],[-100 0],1,'k','--')
-        hold on
-        plotSpectrum(srr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
-            [0 500/slice_spacing],[-100 0],1,'k','-')
-        plotSpectrum(ground_truth(ceil(acq_x_pts/2),:),fov/1000,'FT',...
-            [0 500/slice_spacing],[-100 0],1,'k',':')
-    else
-        plotSpectrum(lr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
-            [0 500/slice_spacing],[-100 0],1,'b','-')
-        hold on
-        plotSpectrum(srr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
-            [0 500/slice_spacing],[-100 0],1,'r','-')
-        plotSpectrum(ground_truth(ceil(acq_x_pts/2),:),fov/1000,'FT',...
-            [0 500/slice_spacing],[-100 0],1,'g','-')
+
+    if display_graphs
+        % Compare central lines profiles
+        fig = figure;
+        if bw
+            plot(x_acq,lr_img(ceil(acq_x_pts/2),:),'k--')
+            hold on
+            plot(x_acq,srr_img(ceil(acq_x_pts/2),:),'k')
+            plot(x_acq,ground_truth(ceil(acq_x_pts/2),:),'k:')
+        else
+            plot(x_acq,lr_img(ceil(acq_x_pts/2),:),'b')
+            hold on
+            plot(x_acq,srr_img(ceil(acq_x_pts/2),:),'r')
+            plot(x_acq,ground_truth(ceil(acq_x_pts/2),:),'g')
+        end
+        % title('Comparison of central line profiles', 'Interpreter', 'latex')
+        xlabel('y / mm','Interpreter','latex')
+        ax = gca;
+        ax.YLim = [-0.05 1.05];
+        fig.Position(3:4) = [560 210];
+        if save_images
+            saveas(gcf,[fn_root 'profiles'],'epsc')
+        end
+        % Plot Fourier transforms
+        fig = figure;
+        if bw
+            plotSpectrum(lr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+                [0 500/slice_spacing],[-100 0],1,'k','--')
+            hold on
+            plotSpectrum(srr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+                [0 500/slice_spacing],[-100 0],1,'k','-')
+            plotSpectrum(ground_truth(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+                [0 500/slice_spacing],[-100 0],1,'k',':')
+        else
+            plotSpectrum(lr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+                [0 500/slice_spacing],[-100 0],1,'b','-')
+            hold on
+            plotSpectrum(srr_img(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+                [0 500/slice_spacing],[-100 0],1,'r','-')
+            plotSpectrum(ground_truth(ceil(acq_x_pts/2),:),fov/1000,'FT',...
+                [0 500/slice_spacing],[-100 0],1,'g','-')
+        end
+        fig.Position(3:4) = [560 210];
+        if save_images
+            saveas(gcf,[fn_root 'profiles_ft'],'epsc')
+        end
     end
-    fig.Position(3:4) = [560 210];
-    if save_images
-        saveas(gcf,[fn_root 'profiles_ft'],'epsc')
+
+    % Calculate errors
+    l1error_srr = norm(srr_img(:)-ground_truth(:),1);
+    l1error_lr = norm(lr_img(:)-ground_truth(:),1);
+    l1error_hr = norm(hr_img(:)-ground_truth(:),1);
+    if display_results
+        fprintf('L1 error of SRR image: %d\n', l1error_srr)
+        fprintf('L1 error of LR image: %d\n', l1error_lr)
+        fprintf('L1 error of HR image: %d\n', l1error_hr)
     end
+
+    % Save results to file
 end
 
-% Calculate errors
-l1error_srr = norm(srr_img(:)-ground_truth(:),1);
-fprintf('L1 error of SRR image: %d\n', l1error_srr)
-l1error_lr = norm(lr_img(:)-ground_truth(:),1);
-fprintf('L1 error of LR image: %d\n', l1error_lr)
-l1error_hr = norm(hr_img(:)-ground_truth(:),1);
-fprintf('L1 error of HR image: %d\n', l1error_hr)
+if save_results
+    % Close results file
+end
+
