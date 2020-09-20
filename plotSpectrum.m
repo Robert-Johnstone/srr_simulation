@@ -19,7 +19,7 @@ function plotSpectrum(img,image_width,label,xlimits,ylimits,dB,linecol,markers)
     % Plot
     if dB
         plot(f,10*log(P(1:n/2+1)/max(P)),'DisplayName',label,'Color',linecol,'LineStyle',markers) % Stops at Nyquist limit  
-        ylabel(['$\textrm{fft}(signal) (dB)$'], 'Interpreter', 'latex')
+        ylabel(['$\textrm{fft}(signal)$ (dB)'], 'Interpreter', 'latex')
     else
         plot(f,P(1:n/2+1)/max(P),'DisplayName',label,'Color',linecol,'LineStyle',markers) % Stops at Nyquist limit  
         %plot(f,P/max(P),'DisplayName',label) % Full spectrum
