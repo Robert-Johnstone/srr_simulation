@@ -17,18 +17,18 @@ slice_spacing = 2; % mm
 
 fp_kernel_type = 'gaussian';
 fp_width = slice_thickness/slice_spacing; % The 'wrong' width
-plot_curves(slice_spacing,fp_kernel_type,fp_width,fig_profile,fig_spectrum,'k','-')
+plot_curves(slice_spacing,fp_kernel_type,fp_width,fig_profile,fig_spectrum,'k','-','Kernel 1')
 
 fp_kernel_type = 'gaussian';
 fp_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
-plot_curves(slice_spacing,fp_kernel_type,fp_width,fig_profile,fig_spectrum,'k','--')
+plot_curves(slice_spacing,fp_kernel_type,fp_width,fig_profile,fig_spectrum,'k','--','Kernel 2')
+
+fp_kernel_type = 'sg_100_100_0_meas.mat';
+fp_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
+plot_curves(slice_spacing,fp_kernel_type,fp_width,fig_profile,fig_spectrum,'k','-.','Kernel 3')
 
 fp_kernel_type = 'generated';
-plot_curves(slice_spacing,fp_kernel_type,fp_width,fig_profile,fig_spectrum,'k',':')
-
-fp_kernel_type = 'sg_150_100_167.mat';
-fp_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
-plot_curves(slice_spacing,fp_kernel_type,fp_width,fig_profile,fig_spectrum,'k','-.')
+plot_curves(slice_spacing,fp_kernel_type,fp_width,fig_profile,fig_spectrum,'k',':','Kernel 4')
 
 if save_images
     figure(fig_profile)
@@ -37,7 +37,7 @@ if save_images
     saveas(gcf,'kernels_ft','epsc')
 end
 
-function plot_curves(slice_spacing,fp_kernel_type,fp_width,fig_profile,fig_spectrum,linecol,markers)
+function plot_curves(slice_spacing,fp_kernel_type,fp_width,fig_profile,fig_spectrum,linecol,markers,linename)
     % Create forward projection kernel
     m = 3; % Multiplier used to set how big vector representing kernel is
     n_kernel_pts = ceil(fp_width)*m;
@@ -65,16 +65,18 @@ function plot_curves(slice_spacing,fp_kernel_type,fp_width,fig_profile,fig_spect
 
     % Compare central lines profiles
     figure(fig_profile)
-    plot(kernel_pts,fp_kernel,'Color',linecol,'LineStyle',markers)
+    plot(kernel_pts,fp_kernel,'Color',linecol,'LineStyle',markers,'DisplayName',linename)
     hold on
-    xlabel('$z$ (HR pixels)','Interpreter','latex')
+    xlabel('HR pixels','Interpreter','latex')
     ax = gca;
     ax.XLim = [-4 4];
+    legend
 
     % Plot Fourier transform
     figure(fig_spectrum)
-    plotSpectrum(fp_kernel,n_kernel_pts*slice_spacing/1000,'FT',...
+    plotSpectrum(fp_kernel,n_kernel_pts*slice_spacing/1000,linename,...
         [0 500/slice_spacing],[-100 0],1,linecol,markers)
     ax = gca;
-    ax.YLim = [-40 0];
+    ax.YLim = [-40 0];   
+    legend
 end
