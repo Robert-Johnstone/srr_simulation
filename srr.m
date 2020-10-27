@@ -14,7 +14,7 @@ fov = 300; % mm - must be even multiple of slice spacing
 slice_thickness = 6; % mm
 slice_spacing = 2; % mm - must divide fov to give even number
 acq_resn = 2; % mm, in-slice resolution
-slice_profile = 'sg_150_100_167.mat'; % gaussian, rect, rect_adv, sinc, <filename>
+slice_profile = 'sg_100_100_0_meas.mat'; % gaussian, rect, rect_adv, sinc, <filename>
 acq_snrs = [10,20,30,50,100,150,200,500,1000,inf]; % Signal to noise ratios for acquisition
 
 % Simulation parameters
@@ -23,7 +23,7 @@ sim_resn = 0.2; % mm
 % SRR parameters
 % Projection kernel width in y pixels (units of slice spacing)
 fp_kernel_type = 'gaussian'; % gaussian, <filename>, generated
-bp_kernel_type = 'same'; % guassian, <filename>, generated, same [as FP kernel]
+bp_kernel_type = 'same'; % gaussian, <filename>, generated, same [as FP kernel]
 kernel_width = sqrt(slice_thickness^2-slice_spacing^2)/slice_spacing; % The 'right' width
 % kernel_width = slice_thickness/slice_spacing; % The 'wrong' width
 % Note - kernel_width not used for 'generated' FP kernel
@@ -130,9 +130,9 @@ for acq_snr = acq_snrs
             plot(x_acq,ground_truth(ceil(acq_x_pts/2),:),'g')
         end
         % title('Comparison of central line profiles', 'Interpreter', 'latex')
-        xlabel('y / mm','Interpreter','latex')
+        xlabel('$y$ (mm)','Interpreter','latex')
         ax = gca;
-        ax.YLim = [-0.05 1.05];
+        ax.YLim = [-0.1 1.1];
         fig.Position(3:4) = [560 210];
         if save_images
             saveas(gcf,[fn_root 'profiles'],'epsc')

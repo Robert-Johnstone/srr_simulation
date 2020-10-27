@@ -24,7 +24,7 @@ function fp_kernel = create_fp_kernel(fp_kernel_size)
     % Create forward projection kernel
     kernel_pts = linspace(-(fp_kernel_size-1)/2,(fp_kernel_size-1)/2,fp_kernel_size);
     % Load saved slice profile and resample of kernel point spacing
-    load('sg_150_100_167.mat','profile');
+    load('sg_100_100_0_meas.mat','profile');
     spw = 6; % Conventional slice width for saved slice profile, mm
     spr = 0.001; % Conventional resolution for saved slice profile, mm
     slice_profile_hr = interp1((-0.24:1e-6:0.24)/spw,profile,kernel_pts*spr,'linear',0);
